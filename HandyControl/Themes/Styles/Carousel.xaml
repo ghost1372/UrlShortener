@@ -1,0 +1,94 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:HandyControl.Controls"
+    xmlns:interactivity="clr-namespace:HandyControl.Interactivity">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="../Basic/Paths.xaml" />
+        <ResourceDictionary Source="Button.xaml" />
+        <ResourceDictionary Source="ListBox.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <Style BasedOn="{StaticResource StackPanelListBox}" TargetType="controls:Carousel">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="controls:Carousel">
+                    <ControlTemplate.Triggers>
+                        <EventTrigger RoutedEvent="FrameworkElement.MouseEnter">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation
+                                        Storyboard.TargetName="GridTop"
+                                        Storyboard.TargetProperty="Opacity"
+                                        To="1"
+                                        Duration="0:0:.1" />
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                        <EventTrigger RoutedEvent="FrameworkElement.MouseLeave">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation
+                                        Storyboard.TargetName="GridTop"
+                                        Storyboard.TargetProperty="Opacity"
+                                        To="0"
+                                        Duration="0:0:.1" />
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </ControlTemplate.Triggers>
+                    <Grid ClipToBounds="True">
+                        <ItemsPresenter
+                            x:Name="PART_ItemsControl"
+                            HorizontalAlignment="Left"
+                            SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                        <Grid Name="GridTop" Opacity="0">
+                            <Button
+                                Margin="30,0,0,0"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Command="interactivity:ControlCommands.Prev"
+                                Style="{StaticResource ButtonCustom}">
+                                <Border
+                                    Width="50"
+                                    Height="100"
+                                    Background="{DynamicResource DarkOpacityBrush}"
+                                    CornerRadius="4">
+                                    <Path
+                                        Margin="16"
+                                        Fill="White"
+                                        Style="{StaticResource LeftPathStyle}" />
+                                </Border>
+                            </Button>
+                            <Button
+                                Margin="0,0,30,0"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Command="interactivity:ControlCommands.Next"
+                                Style="{StaticResource ButtonCustom}">
+                                <Border
+                                    Width="50"
+                                    Height="100"
+                                    Background="{DynamicResource DarkOpacityBrush}"
+                                    CornerRadius="4">
+                                    <Path
+                                        Margin="16"
+                                        Fill="White"
+                                        Style="{StaticResource RightPathStyle}" />
+                                </Border>
+                            </Button>
+                        </Grid>
+                        <StackPanel
+                            Name="PART_PanelPage"
+                            Margin="0,0,0,20"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Bottom"
+                            Orientation="Horizontal" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>
