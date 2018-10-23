@@ -6,7 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:UrlShortener"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Title="Url Shorter v1.3"
+    Title="Url Shorter v1.4"
     Width="600"
     Height="200"
     ResizeMode="NoResize"
@@ -58,11 +58,13 @@
                     SelectionChanged="cmbService_SelectionChanged"
                     Style="{StaticResource ComboBoxExtend}">
                     <ComboBoxItem Content="Yon" />
+                    <ComboBoxItem Content="Opizo" />
                     <ComboBoxItem Content="Bitly" />
                 </ComboBox>
                 <StackPanel Orientation="Horizontal">
                     <TextBox
                         Name="txtUrl"
+                        controls:InfoElement.ContentHeight="35"
                         controls:InfoElement.Necessary="True"
                         controls:InfoElement.Placeholder="Type Url Here..."
                         TextChanged="txtUrl_TextChanged">
@@ -81,6 +83,7 @@
                         Name="txtCustom"
                         Width="130"
                         Margin="10,0,0,0"
+                        controls:InfoElement.ContentHeight="35"
                         controls:InfoElement.Placeholder="Custom Url Optional"
                         MaxLength="10">
                         <TextBox.Style>

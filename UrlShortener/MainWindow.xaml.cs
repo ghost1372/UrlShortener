@@ -4,10 +4,13 @@ using Newtonsoft.Json;
 using nucs.JsonSettings;
 using nucs.JsonSettings.Autosave;
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Data;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Script.Serialization;
 using System.Windows;
@@ -65,6 +68,40 @@ namespace UrlShortener
             }
         }
 
+        public string OpizoShorten(string longUrl)
+        {
+            string link = string.Empty;
+            using (var wb = new WebClient())
+            {
+                wb.Headers.Add("X-API-KEY", config.OpizoApiKey);
+                var data = new NameValueCollection();
+                data["url"] = longUrl;
+                var response = wb.UploadValues("https://opizo.com/api/v1/shrink/", "POST", data);
+                string responseInString = Encoding.UTF8.GetString(response);
+
+                Regex regexIsSuccess = new Regex("status(.*?)\",");
+                Regex regex = new Regex("url(.*?)\",");
+
+                Match matchIsSuccess = regexIsSuccess.Match(responseInString);
+                if (matchIsSuccess.Success)
+                {
+                    if (matchIsSuccess.Value.Contains("success"))
+                    {
+                        Match match = regex.Match(responseInString);
+                        if (match.Success)
+                        {
+                            link = match.Value.Remove(0, 6).Replace(@"\/", @"/").Replace("\",", "").Replace(" ", "");
+                        }
+                    }
+                }
+                else
+                {
+                    Growl.Error("something is wrong try again");
+                }
+            }
+            return link;
+        }
+
         public string YonShorten(string longUrl, string customURL = "")
         {
             string link = string.Empty;
@@ -84,7 +121,17 @@ namespace UrlShortener
             }
             return link;
         }
-
+        public class Opizo
+        {
+            public string status { get; set; }
+            public string code { get; set; }
+            public IList<OpizoData> data { get; set; }
+        }
+        public class OpizoData
+        {
+            public string url { get; set; }
+            public string active_domain { get; set; }
+        }
         public class Yon
         {
             public bool status { get; set; }
@@ -138,12 +185,24 @@ namespace UrlShortener
                         Margin = new Thickness(5),
                         Text = config.BitlyLoginKey
                     };
+                    TextBox txtOpizoApi = new TextBox()
+                    {
+                        Style = TryFindResource("TextBoxExtend") as Style,
+                        Width = 240,
+                        Margin = new Thickness(5),
+                        Text = config.OpizoApiKey
+                    };
                     InfoElement.SetTitle(txtBitlyApi, "Change Bitly Api Key");
                     InfoElement.SetTitleAlignment(txtBitlyApi, HandyControl.Data.Enum.TitleAlignment.Top);
                     InfoElement.SetContentHeight(txtBitlyApi, 35);
                     InfoElement.SetPlaceholder(txtBitlyApi, "Bitly Api Key");
                     InfoElement.SetContentHeight(txtBitlyLogin, 35);
                     InfoElement.SetPlaceholder(txtBitlyLogin, "Bitly Login Key");
+
+                    InfoElement.SetTitle(txtOpizoApi, "Change Opizo Api Key");
+                    InfoElement.SetTitleAlignment(txtOpizoApi, HandyControl.Data.Enum.TitleAlignment.Top);
+                    InfoElement.SetContentHeight(txtOpizoApi, 35);
+                    InfoElement.SetPlaceholder(txtOpizoApi, "Opizo Api Key");
 
                     StackPanel stack = new StackPanel()
                     {
@@ -159,25 +218,32 @@ namespace UrlShortener
                     {
                         config.DefaultBitlyAPI = false;
                         txtBitlyApi.IsEnabled = true;
+                        txtOpizoApi.IsEnabled = true;
                         txtBitlyLogin.IsEnabled = true;
                     };
                     chkApi.Unchecked += (s, ev) =>
                     {
                         config.BitlyApiKey = string.Empty;
                         config.BitlyLoginKey = string.Empty;
+                        config.OpizoApiKey = string.Empty;
                         config.DefaultBitlyAPI = true;
                         txtBitlyApi.IsEnabled = false;
+                        txtOpizoApi.IsEnabled = false;
                         txtBitlyLogin.IsEnabled = false;
                     };
                     if (config.DefaultBitlyAPI)
                     {
                         txtBitlyApi.IsEnabled = false;
                         txtBitlyLogin.IsEnabled = false;
+                        txtOpizoApi.IsEnabled = false;
+
                     }
                     else
                     {
                         txtBitlyApi.IsEnabled = true;
                         txtBitlyLogin.IsEnabled = true;
+                        txtOpizoApi.IsEnabled = true;
+
                     }
 
                     CheckBox chkTopMust = new CheckBox()
@@ -201,11 +267,13 @@ namespace UrlShortener
                     {
                         config.BitlyApiKey = txtBitlyApi.Text;
                         config.BitlyLoginKey = txtBitlyLogin.Text;
+                        config.OpizoApiKey = txtOpizoApi.Text;
                         popup.Close();
                     };
                     stack.Children.Add(chkApi);
                     stack.Children.Add(txtBitlyApi);
                     stack.Children.Add(txtBitlyLogin);
+                    stack.Children.Add(txtOpizoApi);
                     stack.Children.Add(chkTopMust);
                     stack.Children.Add(btn);
 
@@ -236,6 +304,9 @@ namespace UrlShortener
                     break;
 
                 case 1:
+                    txtUrl.Text = OpizoShorten(txtUrl.Text);
+                    break;
+                case 2:
                     txtUrl.Text = BitlyShorten(txtUrl.Text);
                     break;
             }
