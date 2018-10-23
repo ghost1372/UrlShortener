@@ -1,7 +1,6 @@
 ﻿using HandyControl.Controls;
 using Microsoft.CSharp.RuntimeBinder;
 using System;
-using System.ComponentModel;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -17,37 +16,16 @@ namespace UrlShortener
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : WindowBorderless, INotifyPropertyChanged
+    public partial class MainWindow : WindowBorderless
     {
-        public int _Index { get; set; } = 0;
-        private int LastIndex = 2;
         private string BitlyApiKey = "R_c597e397b606436fa6a9179626da61bb";
         private string BitlyLoginKey = "o_1i6m8a9v55";
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
+        private int ServiceIndex = 0;
         public MainWindow()
         {
             InitializeComponent();
             Growl.SetGrowlPanel(PanelMessage);
-            DataContext = this;
         }
-
-        public int Index
-        {
-            get { return _Index; }
-            set { _Index = value; OnPropertyChanged("Index"); }
-        }
-
-        protected void OnPropertyChanged(string name)
-        {
-            PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(name));
-            }
-        }
-
         public string BitlyShorten(string longUrl)
         {
             var url = string.Format("http://api.bit.ly/shorten?format=json&version=2.0.1&longUrl={0}&login={1}&apiKey={2}", HttpUtility.UrlEncode(longUrl), BitlyLoginKey, BitlyApiKey);
@@ -87,70 +65,84 @@ namespace UrlShortener
         {
             txtCopy.Foreground = TryFindResource("SuccessBrush") as Brush;
             txtCopy.Text = "Copied";
-            Clipboard.SetText(txtShort.Text);
-        }
-
-        private void StepBar_Click(object sender, RoutedEventArgs e)
-        {
-            var tag = sender as Button;
-            if (tag.Tag.Equals("Next"))
-            {
-                if (Index == LastIndex)
-                    return;
-                if (Index < LastIndex)
-                    Index++;
-            }
-            else
-            {
-                if (Index == 0)
-                    return;
-
-                Index--;
-            }
-            if (Index == 1)
-                btnNext.IsEnabled = false;
-
-            if (Index == 2)
-            {
-                switch (cmbService.SelectedIndex)
-                {
-                    case 0:
-                        txtShort.Text = BitlyShorten(txtUrl.Text);
-                        break;
-                }
-                txtCopy.Text = "Click Here to Copy";
-                txtCopy.Foreground = TryFindResource("BorderBrush") as Brush;
-            }
-        }
-
-        private void txtShort_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            System.Diagnostics.Process.Start(txtShort.Text);
+            Clipboard.SetText(txtUrl.Text);
         }
 
         private void txtUrl_TextChanged(object sender, TextChangedEventArgs e)
         {
 
             if (string.IsNullOrEmpty(txtUrl.Text))
-                btnNext.IsEnabled = false;
-                
+                btn.IsEnabled = false;
+
             Uri uriResult;
             bool result = Uri.TryCreate(txtUrl.Text, UriKind.Absolute, out uriResult)
                 && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
-            if (result)
-                btnNext.IsEnabled = true;
-            else
-                btnNext.IsEnabled = false;
-        }
 
-        private void cmbService_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            btnNext.IsEnabled = true;
+            if (result)
+                btn.IsEnabled = true;
+            else
+                btn.IsEnabled = false;
+
+            txtCopy.Text = "Click Here to Copy";
+            txtCopy.Foreground = TryFindResource("BorderBrush") as Brush;
         }
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
-            Growl.Info("Coded by Mahdi Hosseini\n Contact: mahdidvb72@gmail.com");
+            var tag = sender as MenuItem;
+            switch (tag.Tag)
+            {
+                case "Settings":
+                    PopupWindow popup = new PopupWindow() {
+                        Title = "Settings",
+                        AllowsTransparency = true,
+                        WindowStyle = WindowStyle.None,
+                        WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                        HorizontalContentAlignment = HorizontalAlignment.Center,
+                        ShowInTaskbar = true
+                    };
+
+                    ComboBox cmb = new ComboBox() {
+                        Style = TryFindResource("ComboBoxExtend") as Style,
+                        VerticalAlignment = VerticalAlignment.Top
+                    };
+                    cmb.Items.Add("Bitly");
+                    InfoElement.SetContentHeight(cmb, 35);
+                    InfoElement.SetPlaceholder(cmb, "Choose Url Service");
+                    cmb.SelectionChanged += (s, ev) => {
+                        ServiceIndex = cmb.SelectedIndex;
+                    };
+
+                    StackPanel stack = new StackPanel() {
+                        Margin = new Thickness(10)
+                    };
+
+                    stack.Children.Add(cmb);
+
+                    popup.PopupElement = stack;
+
+                    popup.ShowDialog();
+                    break;
+
+                case "Update":
+
+                    break;
+
+                case "About":
+                    Growl.Info("Coded by Mahdi Hosseini\n Contact: mahdidvb72@gmail.com");
+                    break;
+            }
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            switch (ServiceIndex)
+            {
+                case 0:
+                    txtUrl.Text = BitlyShorten(txtUrl.Text);
+                    break;
+            }
+            stck_MouseLeftButtonDown(null, null);
         }
     }
 }
