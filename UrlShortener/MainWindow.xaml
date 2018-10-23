@@ -6,7 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:UrlShortener"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Title="Url Shorter"
+    Title="Url Shorter v1.3"
     Width="600"
     Height="200"
     ResizeMode="NoResize"
@@ -47,16 +47,53 @@
 
             <StackPanel
                 MaxWidth="800"
-                Margin="10,30,10,0"
+                Margin="10,10,10,0"
                 VerticalAlignment="Top">
+                <ComboBox
+                    x:Name="cmbService"
+                    Width="240"
+                    Margin="0,0,0,10"
+                    HorizontalAlignment="Left"
+                    controls:InfoElement.Placeholder="Select Url Shortener Service"
+                    SelectionChanged="cmbService_SelectionChanged"
+                    Style="{StaticResource ComboBoxExtend}">
+                    <ComboBoxItem Content="Yon" />
+                    <ComboBoxItem Content="Bitly" />
+                </ComboBox>
                 <StackPanel Orientation="Horizontal">
                     <TextBox
                         Name="txtUrl"
-                        Width="420"
                         controls:InfoElement.Necessary="True"
                         controls:InfoElement.Placeholder="Type Url Here..."
-                        Style="{StaticResource TextBoxExtend}"
-                        TextChanged="txtUrl_TextChanged" />
+                        TextChanged="txtUrl_TextChanged">
+                        <TextBox.Style>
+                            <Style BasedOn="{StaticResource TextBoxExtend}" TargetType="TextBox">
+                                <Setter Property="Width" Value="400" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedIndex, ElementName=cmbService}" Value="0">
+                                        <Setter Property="Width" Value="280" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBox.Style>
+                    </TextBox>
+                    <TextBox
+                        Name="txtCustom"
+                        Width="130"
+                        Margin="10,0,0,0"
+                        controls:InfoElement.Placeholder="Custom Url Optional"
+                        MaxLength="10">
+                        <TextBox.Style>
+                            <Style BasedOn="{StaticResource TextBoxExtend}" TargetType="TextBox">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedIndex, ElementName=cmbService}" Value="0">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBox.Style>
+                    </TextBox>
                     <Button
                         Name="btn"
                         Width="140"
@@ -67,17 +104,17 @@
                         Style="{StaticResource ButtonPrimary}" />
                 </StackPanel>
                 <StackPanel
+                    Name="stck"
                     Margin="10"
                     HorizontalAlignment="Center"
                     Cursor="Hand"
-                    MouseLeftButtonDown="stck_MouseLeftButtonDown"
-                    Orientation="Horizontal">
+                    Orientation="Horizontal"
+                    Visibility="Hidden">
                     <Grid>
                         <TextBlock
-                            Name="txtCopy"
-                            Foreground="{StaticResource BorderBrush}"
+                            Foreground="{StaticResource DarkSuccessBrush}"
                             Style="{StaticResource TextBlockTitle}"
-                            Text="Click Here to Copy" />
+                            Text="Copied" />
 
                         <Rectangle
                             Width="200"
@@ -88,18 +125,6 @@
                             StrokeDashArray="2,2" />
                     </Grid>
                 </StackPanel>
-
-                <!--<ComboBox
-                        Name="cmbService"
-                        Width="240"
-                        Margin="5,20,0,0"
-                        HorizontalAlignment="Left"
-                        controls:InfoElement.Placeholder="Select Url Shortener Service"
-                        SelectionChanged="cmbService_SelectionChanged"
-                        Style="{StaticResource ComboBoxExtend}">
-                        <ComboBoxItem Content="Bitly" />
-                        <ComboBoxItem Content="Soon..." IsEnabled="False" />
-                    </ComboBox>-->
             </StackPanel>
             <controls:ScrollViewer
                 Grid.Column="0"
