@@ -6,7 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:UrlShortener"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Title="Url Shorter v1.4"
+    Title="Url Shorter v1.5"
     Width="600"
     Height="200"
     ResizeMode="NoResize"
@@ -45,11 +45,13 @@
     <controls:TransitioningContentControl>
         <Grid>
 
-            <StackPanel
+            <TabControl>
+                <TabItem Header="Home">
+                    <StackPanel
                 MaxWidth="800"
                 Margin="10,10,10,0"
                 VerticalAlignment="Top">
-                <ComboBox
+                        <ComboBox
                     x:Name="cmbService"
                     Width="240"
                     Margin="0,0,0,10"
@@ -57,78 +59,91 @@
                     controls:InfoElement.Placeholder="Select Url Shortener Service"
                     SelectionChanged="cmbService_SelectionChanged"
                     Style="{StaticResource ComboBoxExtend}">
-                    <ComboBoxItem Content="Yon" />
-                    <ComboBoxItem Content="Opizo" />
-                    <ComboBoxItem Content="Bitly" />
-                </ComboBox>
-                <StackPanel Orientation="Horizontal">
-                    <TextBox
+                            <ComboBoxItem Content="Yon" />
+                            <ComboBoxItem Content="Opizo" />
+                            <ComboBoxItem Content="Bitly" />
+                            <ComboBoxItem Content="Atrab" />
+                        </ComboBox>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBox
                         Name="txtUrl"
                         controls:InfoElement.ContentHeight="35"
                         controls:InfoElement.Necessary="True"
                         controls:InfoElement.Placeholder="Type Url Here..."
                         TextChanged="txtUrl_TextChanged">
-                        <TextBox.Style>
-                            <Style BasedOn="{StaticResource TextBoxExtend}" TargetType="TextBox">
-                                <Setter Property="Width" Value="400" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding SelectedIndex, ElementName=cmbService}" Value="0">
-                                        <Setter Property="Width" Value="280" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBox.Style>
-                    </TextBox>
-                    <TextBox
+                                <TextBox.Style>
+                                    <Style BasedOn="{StaticResource TextBoxExtend}" TargetType="TextBox">
+                                        <Setter Property="Width" Value="400" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedIndex, ElementName=cmbService}" Value="0">
+                                                <Setter Property="Width" Value="280" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding SelectedIndex, ElementName=cmbService}" Value="4">
+                                                <Setter Property="Width" Value="280" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBox.Style>
+                            </TextBox>
+                            <TextBox
                         Name="txtCustom"
-                        Width="130"
-                        Margin="10,0,0,0"
+                        Width="140"
+                        Margin="10,0,5,0"
                         controls:InfoElement.ContentHeight="35"
-                        controls:InfoElement.Placeholder="Custom Url Optional"
+                        controls:InfoElement.Placeholder="Custom Url [Optional]"
                         MaxLength="10">
-                        <TextBox.Style>
-                            <Style BasedOn="{StaticResource TextBoxExtend}" TargetType="TextBox">
-                                <Setter Property="Visibility" Value="Collapsed" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding SelectedIndex, ElementName=cmbService}" Value="0">
-                                        <Setter Property="Visibility" Value="Visible" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBox.Style>
-                    </TextBox>
-                    <Button
+                                <TextBox.Style>
+                                    <Style BasedOn="{StaticResource TextBoxExtend}" TargetType="TextBox">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedIndex, ElementName=cmbService}" Value="0">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding SelectedIndex, ElementName=cmbService}" Value="4">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBox.Style>
+                            </TextBox>
+                            <Button
                         Name="btn"
                         Width="140"
-                        Margin="10,0,0,0"
+                        Margin="5,0,0,0"
                         Click="Button_Click"
                         Content="Short it!"
+                        IsDefault="True"
                         IsEnabled="False"
                         Style="{StaticResource ButtonPrimary}" />
-                </StackPanel>
-                <StackPanel
+                        </StackPanel>
+                        <StackPanel
                     Name="stck"
                     Margin="10"
                     HorizontalAlignment="Center"
                     Cursor="Hand"
                     Orientation="Horizontal"
                     Visibility="Hidden">
-                    <Grid>
-                        <TextBlock
+                            <Grid>
+                                <TextBlock
                             Foreground="{StaticResource DarkSuccessBrush}"
                             Style="{StaticResource TextBlockTitle}"
                             Text="Copied" />
 
-                        <Rectangle
+                                <Rectangle
                             Width="200"
                             Height="40"
                             RadiusX="4"
                             RadiusY="4"
                             Stroke="{StaticResource BorderBrush}"
                             StrokeDashArray="2,2" />
-                    </Grid>
-                </StackPanel>
-            </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+                </TabItem>
+                <TabItem Header="List">
+                    
+                </TabItem>
+            </TabControl>
             <controls:ScrollViewer
                 Grid.Column="0"
                 HorizontalAlignment="Right"
