@@ -8,7 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="Url Shorter v1.5"
     Width="600"
-    Height="200"
+    Height="300"
     ResizeMode="NoResize"
     ShowInTaskbar="True"
     ShowTitle="True"
@@ -17,6 +17,7 @@
     UseLayoutRounding="True"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
+
     <controls:WindowBorderless.NonClientAreaContent>
         <StackPanel Orientation="Horizontal">
             <Menu
@@ -45,20 +46,20 @@
     <controls:TransitioningContentControl>
         <Grid>
 
-            <TabControl>
+            <TabControl Name="tabc">
                 <TabItem Header="Home">
                     <StackPanel
-                MaxWidth="800"
-                Margin="10,10,10,0"
-                VerticalAlignment="Top">
+                        MaxWidth="800"
+                        Margin="10,10,10,0"
+                        VerticalAlignment="Top">
                         <ComboBox
-                    x:Name="cmbService"
-                    Width="240"
-                    Margin="0,0,0,10"
-                    HorizontalAlignment="Left"
-                    controls:InfoElement.Placeholder="Select Url Shortener Service"
-                    SelectionChanged="cmbService_SelectionChanged"
-                    Style="{StaticResource ComboBoxExtend}">
+                            x:Name="cmbService"
+                            Width="240"
+                            Margin="0,0,0,10"
+                            HorizontalAlignment="Left"
+                            controls:InfoElement.Placeholder="Select Url Shortener Service"
+                            SelectionChanged="cmbService_SelectionChanged"
+                            Style="{StaticResource ComboBoxExtend}">
                             <ComboBoxItem Content="Yon" />
                             <ComboBoxItem Content="Opizo" />
                             <ComboBoxItem Content="Bitly" />
@@ -66,11 +67,11 @@
                         </ComboBox>
                         <StackPanel Orientation="Horizontal">
                             <TextBox
-                        Name="txtUrl"
-                        controls:InfoElement.ContentHeight="35"
-                        controls:InfoElement.Necessary="True"
-                        controls:InfoElement.Placeholder="Type Url Here..."
-                        TextChanged="txtUrl_TextChanged">
+                                Name="txtUrl"
+                                controls:InfoElement.ContentHeight="35"
+                                controls:InfoElement.Necessary="True"
+                                controls:InfoElement.Placeholder="Type Url Here..."
+                                TextChanged="txtUrl_TextChanged">
                                 <TextBox.Style>
                                     <Style BasedOn="{StaticResource TextBoxExtend}" TargetType="TextBox">
                                         <Setter Property="Width" Value="400" />
@@ -86,12 +87,12 @@
                                 </TextBox.Style>
                             </TextBox>
                             <TextBox
-                        Name="txtCustom"
-                        Width="140"
-                        Margin="10,0,5,0"
-                        controls:InfoElement.ContentHeight="35"
-                        controls:InfoElement.Placeholder="Custom Url [Optional]"
-                        MaxLength="10">
+                                Name="txtCustom"
+                                Width="140"
+                                Margin="10,0,5,0"
+                                controls:InfoElement.ContentHeight="35"
+                                controls:InfoElement.Placeholder="Custom Url [Optional]"
+                                MaxLength="10">
                                 <TextBox.Style>
                                     <Style BasedOn="{StaticResource TextBoxExtend}" TargetType="TextBox">
                                         <Setter Property="Visibility" Value="Collapsed" />
@@ -107,42 +108,120 @@
                                 </TextBox.Style>
                             </TextBox>
                             <Button
-                        Name="btn"
-                        Width="140"
-                        Margin="5,0,0,0"
-                        Click="Button_Click"
-                        Content="Short it!"
-                        IsDefault="True"
-                        IsEnabled="False"
-                        Style="{StaticResource ButtonPrimary}" />
+                                Name="btn"
+                                Width="140"
+                                Margin="5,0,0,0"
+                                Click="Button_Click"
+                                Content="Short it!"
+                                IsDefault="True"
+                                IsEnabled="False"
+                                Style="{StaticResource ButtonPrimary}" />
                         </StackPanel>
                         <StackPanel
-                    Name="stck"
-                    Margin="10"
-                    HorizontalAlignment="Center"
-                    Cursor="Hand"
-                    Orientation="Horizontal"
-                    Visibility="Hidden">
+                            Name="stck"
+                            Margin="10"
+                            HorizontalAlignment="Center"
+                            Cursor="Hand"
+                            Orientation="Horizontal"
+                            Visibility="Hidden">
                             <Grid>
                                 <TextBlock
-                            Foreground="{StaticResource DarkSuccessBrush}"
-                            Style="{StaticResource TextBlockTitle}"
-                            Text="Copied" />
+                                    Foreground="{StaticResource DarkSuccessBrush}"
+                                    Style="{StaticResource TextBlockTitle}"
+                                    Text="Copied" />
 
                                 <Rectangle
-                            Width="200"
-                            Height="40"
-                            RadiusX="4"
-                            RadiusY="4"
-                            Stroke="{StaticResource BorderBrush}"
-                            StrokeDashArray="2,2" />
+                                    Width="200"
+                                    Height="40"
+                                    RadiusX="4"
+                                    RadiusY="4"
+                                    Stroke="{StaticResource BorderBrush}"
+                                    StrokeDashArray="2,2" />
                             </Grid>
                         </StackPanel>
                     </StackPanel>
                 </TabItem>
                 <TabItem Header="List">
-                    
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="2*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <Button
+                                Name="btnLoad"
+                                Width="140"
+                                Margin="10"
+                                Click="btnLoad_Click"
+                                Content="Load Text File"
+                                Style="{StaticResource ButtonPrimary}" />
+                            <ComboBox
+                                x:Name="cmbListService"
+                                Margin="10,0,10,0"
+                                controls:InfoElement.Placeholder="Select Url Shortener Service"
+                                Style="{StaticResource ComboBoxExtend}">
+                                <ComboBoxItem Content="Yon" />
+                                <ComboBoxItem Content="Opizo" />
+                                <ComboBoxItem Content="Bitly" />
+                                <ComboBoxItem Content="Atrab" />
+                            </ComboBox>
+                            <GridSplitter
+                                Margin="0,5,0,0"
+                                HorizontalAlignment="Stretch"
+                                Background="Transparent"
+                                BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="1" />
+                            <Button
+                                Name="btnStart"
+                                Width="140"
+                                Margin="10"
+                                Click="btnStart_Click"
+                                Content="Start">
+                                <Button.Style>
+                                    <Style BasedOn="{StaticResource ButtonPrimary}" TargetType="Button">
+                                        <Setter Property="IsEnabled" Value="True" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedItems.Count, ElementName=dataGrid}" Value="0">
+                                                <Setter Property="IsEnabled" Value="False" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+                        <GridSplitter
+                            Grid.Column="1"
+                            Width="4"
+                            HorizontalAlignment="Left"
+                            Background="Transparent"
+                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="1,0,0,0" />
+
+                        <DataGrid
+                            x:Name="dataGrid"
+                            Grid.Column="1"
+                            Margin="10,10"
+                            AutoGenerateColumns="False"
+                            HeadersVisibility="All"
+                            IsReadOnly="True"
+                            RowHeaderWidth="60">
+                            <DataGrid.RowHeaderTemplate>
+                                <DataTemplate>
+                                    <CheckBox IsChecked="{Binding IsSelected, RelativeSource={RelativeSource FindAncestor, AncestorType=DataGridRow}}" />
+                                </DataTemplate>
+                            </DataGrid.RowHeaderTemplate>
+                            <DataGrid.Columns>
+                                <DataGridTextColumn
+                                    Width="1*"
+                                    MinWidth="200"
+                                    Binding="{Binding Link}"
+                                    Header="Link" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+
                 </TabItem>
+
             </TabControl>
             <controls:ScrollViewer
                 Grid.Column="0"

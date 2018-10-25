@@ -1,15 +1,20 @@
 ﻿using HandyControl.Controls;
 using Microsoft.CSharp.RuntimeBinder;
+using Microsoft.Win32;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Data;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Web;
 using System.Web.Script.Serialization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 
 namespace UrlShortener
 {
@@ -211,6 +216,77 @@ namespace UrlShortener
         {
             Properties.Settings.Default.Setting = cmbService.SelectedIndex;
             Properties.Settings.Default.Save();
+        }
+
+        public class ShorterList
+        {
+            public string Link { get; set; }
+            public string ShortLink { get; set; }
+        }
+
+        private List<ShorterList> shorterList = new List<ShorterList>();
+
+        private void btnLoad_Click(object sender, RoutedEventArgs e)
+        {
+            shorterList.Clear();
+            OpenFileDialog theDialog = new OpenFileDialog();
+            theDialog.Title = "Open Text File";
+            theDialog.Filter = "TXT files|*.txt";
+            if (theDialog.ShowDialog() == true)
+            {
+                string filename = theDialog.FileName;
+
+                string[] filelines = File.ReadAllLines(filename);
+
+                foreach (var item in filelines)
+                    shorterList.Add(new ShorterList { Link = item });
+
+                dataGrid.ItemsSource = shorterList;
+            }
+        }
+
+        private void btnStart_Click(object sender, RoutedEventArgs e)
+        {
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                try
+                {
+                    shorterList.Clear();
+                    for (int i = 0; i < dataGrid.SelectedItems.Count; i++)
+                    {
+                        dynamic selectedItem = dataGrid.SelectedItems[i];
+                        var longLink = selectedItem.Link;
+                        switch (cmbListService.SelectedIndex)
+                        {
+                            case 0:
+                                shorterList.Add(new ShorterList { ShortLink = YonShorten(longLink) });
+                                break;
+
+                            case 1:
+                                shorterList.Add(new ShorterList { ShortLink = OpizoShorten(longLink) });
+                                break;
+
+                            case 2:
+                                shorterList.Add(new ShorterList { ShortLink = BitlyShorten(longLink) });
+                                break;
+
+                            case 3:
+                                shorterList.Add(new ShorterList { ShortLink = AtrabIr(longLink) });
+                                break;
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                }
+
+                var oDialog = new SaveFileDialog();
+                oDialog.Title = "Save Text File";
+                oDialog.Filter = "TXT files|*.txt";
+                if (oDialog.ShowDialog() == true)
+                    System.IO.File.WriteAllLines(oDialog.FileName, shorterList.Select(x => x.ShortLink));
+                dataGrid.ItemsSource = null;
+            }), DispatcherPriority.Background);
         }
     }
 }
