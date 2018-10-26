@@ -1,4 +1,5 @@
 ﻿using HandyControl.Controls;
+using HandyControl.Data;
 using Microsoft.CSharp.RuntimeBinder;
 using Microsoft.Win32;
 using Newtonsoft.Json;
@@ -9,6 +10,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Web;
@@ -18,6 +20,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Interop;
 using System.Windows.Threading;
+using System.Xml.Linq;
 
 namespace UrlShortener
 {
@@ -30,6 +33,17 @@ namespace UrlShortener
         private const string BitlyLoginKey = "o_1i6m8a9v55";
         private const string OpizoApiKey = "3DD3A7CD39B37BC8CBD9EFEEAC0B03DA";
 
+        private string newVersion = string.Empty;
+
+        private string ChangeLog = string.Empty;
+        private string url = "";
+        public static string UpdateServer = "https://raw.githubusercontent.com/ghost1372/UrlShortener/master/Updater.xml";
+        public const string UpdateXmlTag = "UrlShorter"; //Defined in Xml file
+        public const string UpdateXmlChildTag = "AppVersion"; //Defined in Xml file
+        public const string UpdateVersionTag = "version"; //Defined in Xml file
+        public const string UpdateUrlTag = "url"; //Defined in Xml file
+        public const string UpdateChangeLogTag = "changelog";
+        public static string getAppVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
         public MainWindow()
         {
             InitializeComponent();
@@ -182,7 +196,7 @@ namespace UrlShortener
             switch (tag.Tag)
             {
                 case "Update":
-
+                    CheckUpdate();
                     break;
 
                 case "About":
@@ -333,5 +347,99 @@ namespace UrlShortener
             else
                 this.Height = 400;
         }
+        private void CheckUpdate()
+        {
+            try
+            {
+                newVersion = string.Empty;
+                ChangeLog = string.Empty;
+                url = "";
+
+                XDocument doc = XDocument.Load(UpdateServer);
+                var items = doc
+                    .Element(XName.Get(UpdateXmlTag))
+                    .Elements(XName.Get(UpdateXmlChildTag));
+                var versionItem = items.Select(ele => ele.Element(XName.Get(UpdateVersionTag)).Value);
+                var urlItem = items.Select(ele => ele.Element(XName.Get(UpdateUrlTag)).Value);
+                var changelogItem = items.Select(ele => ele.Element(XName.Get(UpdateChangeLogTag)).Value);
+
+                newVersion = versionItem.FirstOrDefault();
+                url = urlItem.FirstOrDefault();
+                ChangeLog = changelogItem.FirstOrDefault();
+                CompareVersions();
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        private void CompareVersions()
+        {
+            if (IsVersionLater(newVersion, getAppVersion.ToString()))
+            {
+                Growl.Info(new GrowlInfo { Message = $"A new version {newVersion} has been detected!Do you want to update?", ShowDateTime = false, ActionBeforeClose = isConfirm => {
+                    if(isConfirm)
+                        System.Diagnostics.Process.Start(url);
+
+                    return true;
+                }
+                });
+                Growl.Info(ChangeLog);
+            }
+            else
+            {
+                Growl.Error($"You are using latest version {getAppVersion.ToString()}");
+            }
+        }
+
+        public static bool IsVersionLater(string newVersion, string oldVersion)
+        {
+            // split into groups
+            string[] cur = newVersion.Split('.');
+            string[] cmp = oldVersion.Split('.');
+            // get max length and fill the shorter one with zeros
+            int len = Math.Max(cur.Length, cmp.Length);
+            int[] vs = new int[len];
+            int[] cs = new int[len];
+            Array.Clear(vs, 0, len);
+            Array.Clear(cs, 0, len);
+            int idx = 0;
+            // skip non digits
+            foreach (string n in cur)
+            {
+                if (!Int32.TryParse(n, out vs[idx]))
+                {
+                    vs[idx] = -999; // mark for skip later
+                }
+                idx++;
+            }
+            idx = 0;
+            foreach (string n in cmp)
+            {
+                if (!Int32.TryParse(n, out cs[idx]))
+                {
+                    cs[idx] = -999; // mark for skip later
+                }
+                idx++;
+            }
+            for (int i = 0; i < len; i++)
+            {
+                // skip non digits
+                if ((vs[i] == -999) || (cs[i] == -999))
+                {
+                    continue;
+                }
+                if (vs[i] < cs[i])
+                {
+                    return (false);
+                }
+                else if (vs[i] > cs[i])
+                {
+                    return (true);
+                }
+            }
+            return (false);
+        }
+
     }
 }

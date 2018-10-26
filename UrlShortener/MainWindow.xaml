@@ -45,7 +45,6 @@
                         Click="MenuItem_Click"
                         Foreground="WhiteSmoke"
                         Header="Update"
-                        IsEnabled="False"
                         Tag="Update" />
                     <MenuItem
                         Click="MenuItem_Click"
