@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UrlShorter>
+  <AppVersion>
+    <version>1.6.0</version>
+    <url></url>
+    <changelog>
+added more service
+improved ui
+    </changelog>
+  </AppVersion>
+</UrlShorter>
