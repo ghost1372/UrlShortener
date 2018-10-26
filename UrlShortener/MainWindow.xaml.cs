@@ -9,12 +9,14 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Web;
 using System.Web.Script.Serialization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Interop;
 using System.Windows.Threading;
 
 namespace UrlShortener
@@ -40,6 +42,7 @@ namespace UrlShortener
             this.Topmost = topMost;
         }
 
+        
         public string AtrabIr(string longUrl)
         {
             string link = string.Empty;
@@ -304,6 +307,31 @@ namespace UrlShortener
 
             Properties.Settings.Default.Save();
             this.Topmost = tgTop.IsChecked.Value;
+        }
+
+        private void WindowBorderless_StateChanged(object sender, EventArgs e)
+        {
+            if (WindowState == WindowState.Maximized)
+            {
+                WindowState = WindowState.Normal;
+            }
+        }
+
+        private void WindowBorderless_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            this.Width = 600;
+            if (tabc.SelectedIndex == 0)
+                this.Height = 220;
+            else
+                this.Height = 400;
+        }
+
+        private void tabc_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (tabc.SelectedIndex == 0)
+                this.Height = 220;
+            else
+                this.Height = 400;
         }
     }
 }

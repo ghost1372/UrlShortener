@@ -6,19 +6,21 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:UrlShortener"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Title="Url Shorter v1.5"
+    Title="Url Shorter v1.6"
     Width="600"
     Foreground="WhiteSmoke"
     NonClientAreaBackground="#3c3c3c"
     OtherButtonHoverBrush="#888580"
-    ResizeMode="NoResize"
     ShowInTaskbar="True"
     ShowTitle="True"
+    SizeChanged="WindowBorderless_SizeChanged"
+    StateChanged="WindowBorderless_StateChanged"
+    Style="{StaticResource CustomWindowStyle}"
     Topmost="True"
     UseLayoutRounding="True"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
-    <controls:WindowBorderless.Style>
+    <!--<controls:WindowBorderless.Style>
         <Style BasedOn="{StaticResource CustomWindowStyle}" TargetType="controls:WindowBorderless">
             <Setter Property="Height" Value="220" />
             <Style.Triggers>
@@ -27,7 +29,7 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
-    </controls:WindowBorderless.Style>
+    </controls:WindowBorderless.Style>-->
     <controls:WindowBorderless.NonClientAreaContent>
         <Grid>
             <Grid.ColumnDefinitions>
@@ -76,7 +78,7 @@
     <controls:TransitioningContentControl>
         <Grid>
 
-            <TabControl Name="tabc">
+            <TabControl Name="tabc" SelectionChanged="tabc_SelectionChanged">
                 <TabItem Header="Home">
                     <StackPanel
                         MaxWidth="800"
