@@ -14,6 +14,7 @@ using System.Web;
 using System.Web.Script.Serialization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Threading;
 
 namespace UrlShortener
@@ -32,6 +33,11 @@ namespace UrlShortener
             InitializeComponent();
             Growl.SetGrowlPanel(PanelMessage);
             cmbService.SelectedIndex = Properties.Settings.Default.Setting;
+            cmbListService.SelectedIndex = Properties.Settings.Default.Setting;
+
+            var topMost = Properties.Settings.Default.TopMost;
+            tgTop.IsChecked = topMost;
+            this.Topmost = topMost;
         }
 
         public string AtrabIr(string longUrl)
@@ -287,6 +293,17 @@ namespace UrlShortener
                     System.IO.File.WriteAllLines(oDialog.FileName, shorterList.Select(x => x.ShortLink));
                 dataGrid.ItemsSource = null;
             }), DispatcherPriority.Background);
+        }
+
+        private void ToggleButton_Checked(object sender, RoutedEventArgs e)
+        {
+            if (tgTop.IsChecked == true)
+                Properties.Settings.Default.TopMost = true;
+            else
+                Properties.Settings.Default.TopMost = false;
+
+            Properties.Settings.Default.Save();
+            this.Topmost = tgTop.IsChecked.Value;
         }
     }
 }

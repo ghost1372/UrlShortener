@@ -8,40 +8,70 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="Url Shorter v1.5"
     Width="600"
-    Height="300"
+    Foreground="WhiteSmoke"
+    NonClientAreaBackground="#3c3c3c"
+    OtherButtonHoverBrush="#888580"
     ResizeMode="NoResize"
     ShowInTaskbar="True"
     ShowTitle="True"
-    Style="{StaticResource CustomWindowStyle}"
     Topmost="True"
     UseLayoutRounding="True"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
-
+    <controls:WindowBorderless.Style>
+        <Style BasedOn="{StaticResource CustomWindowStyle}" TargetType="controls:WindowBorderless">
+            <Setter Property="Height" Value="220" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding ElementName=tabc, Path=SelectedIndex, UpdateSourceTrigger=PropertyChanged, Mode=Twoway}" Value="1">
+                    <Setter Property="Height" Value="400" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </controls:WindowBorderless.Style>
     <controls:WindowBorderless.NonClientAreaContent>
-        <StackPanel Orientation="Horizontal">
-            <Menu
-                Margin="10,0,0,0"
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel VerticalAlignment="Stretch" Orientation="Horizontal">
+                <Menu
+                    Margin="10,0,0,0"
+                    Background="Transparent"
+                    WindowChrome.IsHitTestVisibleInChrome="True">
+                    <MenuItem
+                        Click="MenuItem_Click"
+                        Foreground="WhiteSmoke"
+                        Header="Update"
+                        IsEnabled="False"
+                        Tag="Update" />
+                    <MenuItem
+                        Click="MenuItem_Click"
+                        Foreground="WhiteSmoke"
+                        Header="About"
+                        Tag="About" />
+                </Menu>
+            </StackPanel>
+            <StackPanel
+                Grid.Column="1"
+                Margin="10,0,10,0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
                 Background="Transparent"
-                WindowChrome.IsHitTestVisibleInChrome="True">
-                <MenuItem
-                    Click="MenuItem_Click"
-                    Foreground="White"
-                    Header="Settings"
-                    Tag="Settings" />
-                <MenuItem
-                    Click="MenuItem_Click"
-                    Foreground="White"
-                    Header="Update"
-                    IsEnabled="False"
-                    Tag="Update" />
-                <MenuItem
-                    Click="MenuItem_Click"
-                    Foreground="White"
-                    Header="About"
-                    Tag="About" />
-            </Menu>
-        </StackPanel>
+                Orientation="Horizontal">
+                <TextBlock
+                    Margin="0,3,10,0"
+                    Foreground="WhiteSmoke"
+                    Text="TopMost" />
+                <ToggleButton
+                    Name="tgTop"
+                    Background="Transparent"
+                    Checked="ToggleButton_Checked"
+                    Style="{StaticResource ToggleButtonSwitch}"
+                    Unchecked="ToggleButton_Checked" />
+            </StackPanel>
+        </Grid>
+
     </controls:WindowBorderless.NonClientAreaContent>
     <controls:TransitioningContentControl>
         <Grid>
@@ -219,7 +249,6 @@
                             </DataGrid.Columns>
                         </DataGrid>
                     </Grid>
-
                 </TabItem>
 
             </TabControl>
