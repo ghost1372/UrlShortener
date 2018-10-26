@@ -11,14 +11,11 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Web;
 using System.Web.Script.Serialization;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Interop;
 using System.Windows.Threading;
 using System.Xml.Linq;
 
@@ -44,6 +41,7 @@ namespace UrlShortener
         public const string UpdateUrlTag = "url"; //Defined in Xml file
         public const string UpdateChangeLogTag = "changelog";
         public static string getAppVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+
         public MainWindow()
         {
             InitializeComponent();
@@ -56,7 +54,6 @@ namespace UrlShortener
             this.Topmost = topMost;
         }
 
-        
         public string AtrabIr(string longUrl)
         {
             string link = string.Empty;
@@ -347,6 +344,7 @@ namespace UrlShortener
             else
                 this.Height = 400;
         }
+
         private void CheckUpdate()
         {
             try
@@ -377,12 +375,17 @@ namespace UrlShortener
         {
             if (IsVersionLater(newVersion, getAppVersion.ToString()))
             {
-                Growl.Info(new GrowlInfo { Message = $"A new version {newVersion} has been detected!Do you want to update?", ShowDateTime = false, ActionBeforeClose = isConfirm => {
-                    if(isConfirm)
-                        System.Diagnostics.Process.Start(url);
+                Growl.Info(new GrowlInfo
+                {
+                    Message = $"A new version {newVersion} has been detected!Do you want to update?",
+                    ShowDateTime = false,
+                    ActionBeforeClose = isConfirm =>
+                    {
+                        if (isConfirm)
+                            System.Diagnostics.Process.Start(url);
 
-                    return true;
-                }
+                        return true;
+                    }
                 });
                 Growl.Info(ChangeLog);
             }
@@ -440,6 +443,5 @@ namespace UrlShortener
             }
             return (false);
         }
-
     }
 }
