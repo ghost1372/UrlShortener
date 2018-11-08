@@ -2,7 +2,7 @@
 <UrlShorter>
   <AppVersion>
     <version>1.8.0</version>
-    <url></url>
+    <url>https://github.com/ghost1372/UrlShortener/releases/latest</url>
     <changelog>
 Add PLink Service
     </changelog>
