@@ -117,7 +117,10 @@ namespace UrlShortener
             string link = string.Empty;
             using (var wb = new WebClient())
             {
-                var response = wb.DownloadString("https://plink.ir/api?api=" + PlinkApiKey + "& url="+ longUrl + "&custom=" + customURL);
+                UTF8Encoding utf8 = new UTF8Encoding();
+                string utf8Encoded = HttpUtility.UrlEncode(longUrl, utf8);
+
+                var response = wb.DownloadString("https://plink.ir/api?api=" + PlinkApiKey + "& url="+ utf8Encoded + "&custom=" + customURL);
                 var root = JsonConvert.DeserializeObject<PlinkData>(response);
                 if (root.error.Contains("0"))
                     link = root.@short;
@@ -479,6 +482,11 @@ namespace UrlShortener
                 this.Height = 220;
             else
                 this.Height = 400;
+        }
+
+        private void Button_Help(object sender, RoutedEventArgs e)
+        {
+            Growl.Info("Step 1: Create Txt File like this(each line one Link):\n http://Test.com\nhttp://Test.com\nStep 2: Load txt File\nStep 3: Choose Url Shorten Service\nStep 4: Select urls\nStep 5: Click Start");
         }
     }
 }

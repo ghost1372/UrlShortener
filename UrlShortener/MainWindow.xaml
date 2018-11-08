@@ -199,13 +199,16 @@
                             <ColumnDefinition Width="2*" />
                         </Grid.ColumnDefinitions>
                         <StackPanel>
-                            <Button
+                            <StackPanel Orientation="Horizontal">
+                                <Button
                                 Name="btnLoad"
-                                Width="140"
+                                Width="130"
                                 Margin="10"
                                 Click="btnLoad_Click"
                                 Content="Load Text File"
                                 Style="{StaticResource ButtonPrimary}" />
+                                <Button Click="Button_Help" controls:IconElement.Geometry="{DynamicResource AskGeometry}" Style="{DynamicResource ButtonPrimary}"/>
+                            </StackPanel>
                             <ComboBox
                                 x:Name="cmbListService"
                                 Margin="10,0,10,0"
