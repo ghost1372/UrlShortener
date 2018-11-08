@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <UrlShorter>
   <AppVersion>
-    <version>1.6.0</version>
+    <version>1.8.0</version>
     <url></url>
     <changelog>
-added more service
-improved ui
+Add PLink Service
     </changelog>
   </AppVersion>
 </UrlShorter>
