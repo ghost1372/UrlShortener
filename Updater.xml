@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <UrlShorter>
   <AppVersion>
-    <version>1.6.0</version>
-    <url></url>
+    <version>1.8.0</version>
+    <url>https://github.com/ghost1372/UrlShortener/releases/latest</url>
     <changelog>
-added more service
-improved ui
+Add PLink Service
     </changelog>
   </AppVersion>
 </UrlShorter>
