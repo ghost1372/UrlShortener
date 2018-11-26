@@ -34,12 +34,18 @@ namespace UrlShortener
             InitializeComponent();
 
             //get default values
-            cmbService.SelectedIndex = Settings.Default.Setting;
-            cmbListService.SelectedIndex = Settings.Default.Setting;
-            var topMost = Settings.Default.TopMost;
-            tgTop.IsChecked = topMost;
-            Topmost = topMost;
-            Title = "Url Shorter " + getAppVersion;
+            try
+            {
+                cmbService.SelectedIndex = Settings.Default.Setting;
+                cmbListService.SelectedIndex = Settings.Default.Setting;
+                var topMost = Settings.Default.TopMost;
+                tgTop.IsChecked = topMost;
+                Topmost = topMost;
+                Title = "Url Shorter " + getAppVersion;
+            }
+            catch (Exception)
+            {
+            }
         }
 
         private void ToggleButton_Checked(object sender, RoutedEventArgs e)
@@ -69,20 +75,6 @@ namespace UrlShortener
             }
         }
 
-        private void WindowBorderless_StateChanged(object sender, EventArgs e)
-        {
-            if (WindowState == WindowState.Maximized) WindowState = WindowState.Normal;
-        }
-
-        private void WindowBorderless_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            Width = 600;
-            if (tabc.SelectedIndex == 0)
-                Height = 220;
-            else
-                Height = 400;
-        }
-
         private void Button_Help(object sender, RoutedEventArgs e)
         {
             Growl.Info(new GrowlInfo
@@ -100,6 +92,7 @@ namespace UrlShortener
         private const string OpizoApiKey = "3DD3A7CD39B37BC8CBD9EFEEAC0B03DA";
         private const string PlinkApiKey = "RScobms6dUhn";
         private const string MakhlasApiKey = "b64cc0ab-f274-486e-ac23-74dd3e10d9d1";
+        private const string Do0ApiKey = "SJAj4Ik6Q9Rd";
 
         #endregion
 
@@ -196,6 +189,28 @@ namespace UrlShortener
             return link;
         }
 
+        public string Do0Shorten(string longUrl)
+        {
+            var link = string.Empty;
+
+            using (var wb = new WebClient())
+            {
+                var data = new NameValueCollection();
+                data["link"] = longUrl;
+                var response = wb.UploadValues("https://do0.ir/post/SJAj4Ik6Q9Rd/2.5", "POST", data);
+                var responseInString = Encoding.UTF8.GetString(response);
+
+                var root = JsonConvert.DeserializeObject<Do0Data>(responseInString);
+
+                if (root.success)
+                    link = root.@short;
+                else
+                    Growl.Error(root.error);
+            }
+
+            return "https://do0.ir/" + link;
+        }
+
         public string OpizoShorten(string longUrl)
         {
             var link = string.Empty;
@@ -243,6 +258,13 @@ namespace UrlShortener
         #endregion
 
         #region Deserialize Class
+
+        public class Do0Data
+        {
+            public bool success { get; set; }
+            public string @short { get; set; }
+            public string error { get; set; }
+        }
 
         public class PlinkData
         {
@@ -334,6 +356,9 @@ namespace UrlShortener
                     else
                         txtUrl.Text = PlinkShorten(txtUrl.Text, txtCustom.Text);
                     break;
+                case 5:
+                    txtUrl.Text = Do0Shorten(txtUrl.Text);
+                    break;
             }
 
             Clipboard.SetText(txtUrl.Text);
@@ -399,6 +424,9 @@ namespace UrlShortener
                                 break;
                             case 4:
                                 shorterList.Add(new ShorterList {ShortLink = PlinkShorten(longLink)});
+                                break;
+                            case 5:
+                                shorterList.Add(new ShorterList { ShortLink = Do0Shorten(longLink) });
                                 break;
                         }
                     }

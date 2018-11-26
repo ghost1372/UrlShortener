@@ -13,8 +13,7 @@
     OtherButtonHoverBrush="#888580"
     ShowInTaskbar="True"
     ShowTitle="True"
-    SizeChanged="WindowBorderless_SizeChanged"
-    StateChanged="WindowBorderless_StateChanged"
+    ResizeMode="CanMinimize"
     Topmost="True"
     UseLayoutRounding="True"
     WindowStartupLocation="CenterScreen"
@@ -103,6 +102,7 @@
                         <ComboBox
                             x:Name="cmbService"
                             Width="240"
+                            IsEditable="True"
                             Margin="0,0,0,10"
                             HorizontalAlignment="Left"
                             controls:InfoElement.Placeholder="Select Url Shortener Service"
@@ -113,6 +113,7 @@
                             <ComboBoxItem Content="Bitly" />
                             <ComboBoxItem Content="Atrab" />
                             <ComboBoxItem Content="PLink" />
+                            <ComboBoxItem Content="Do0" />
                         </ComboBox>
                         <StackPanel Orientation="Horizontal">
                             <TextBox
@@ -211,6 +212,7 @@
                             <ComboBox
                                 x:Name="cmbListService"
                                 Margin="10,0,10,0"
+                                IsEditable="True"
                                 controls:InfoElement.Placeholder="Select Url Shortener Service"
                                 Style="{StaticResource ComboBoxExtend}">
                                 <ComboBoxItem Content="Yon" />
@@ -218,6 +220,7 @@
                                 <ComboBoxItem Content="Bitly" />
                                 <ComboBoxItem Content="Atrab" />
                                 <ComboBoxItem Content="PLink" />
+                                <ComboBoxItem Content="Do0" />
                             </ComboBox>
                             <GridSplitter
                                 Margin="0,5,0,0"
