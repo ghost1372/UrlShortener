@@ -10,3 +10,56 @@ A simple program to shorten links
 ## If you know the other shortening service that supports API, let us know!
 
 Any contributions will be accepted
+
+# Linux and Mac Version
+you can access Linux and Mac version via two way!<br>
+1.Precompiled Binary [Download it from [here](https://github.com/ghost1372/UrlShortener/releases))]<br>
+2.Compile Project on Linux or Mac
+## Compile Project on Linux or Mac
+First Step: you must install prerequisites library<br>
+Second Step: clone project
+```
+git clone https://github.com/ghost1372/UrlShortener.git
+cd UrlShortener
+cd UrlShortenerCrossPlatform
+```
+Third Step: Compile it
+```
+dotnet build -c release
+```
+
+
+### Prerequisites for .NET Core on Linux
+#### Ubuntu
+Ubuntu distributions require the following libraries installed:<br>
+
+liblttng-ust0<br>
+libcurl3<br>
+libssl1.0.0<br>
+libkrb5-3<br>
+zlib1g<br>
+libicu52 (for 14.x)<br>
+libicu55 (for 16.x)<br>
+libicu57 (for 17.x)<br>
+libicu60 (for 18.x)<br>
+libunwind8<br>
+libuuid1<br>
+
+#### CentOS and Fedora
+CentOS distributions require the following libraries installed:<br>
+
+lttng-ust<br>
+libcurl<br>
+openssl-libs<br>
+krb5-libs<br>
+libicu<br>
+zlib<br>
+libunwind<br>
+libuuid<br>
+
+Fedora users: If your openssl's version >= 1.1, you'll need to install compat-openssl10.
+
+### Prerequisites for .NET Core on Mac
+Download and install the .NET Core SDK from [.NET Downloads](https://www.microsoft.com/net/download/core)).
+
+
