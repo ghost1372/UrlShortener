@@ -16,6 +16,12 @@ CrossPlatform version Written by DotNet Core<br>
 you can access Linux and Mac version via two way!<br>
 1.Precompiled Binary [Download it from [here](https://github.com/ghost1372/UrlShortener/releases))]<br>
 2.Compile Project on Linux or Mac
+
+## How to Run downloaded binary on linux or mac?
+unzip binary and go to directoy then execute following command:
+```
+./UrlShortenerCrossPlatform.dll
+```
 ## Compile Project on Linux or Mac
 First Step: you must install prerequisites library<br>
 Second Step: clone project
