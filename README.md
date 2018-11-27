@@ -22,6 +22,12 @@ unzip binary and go to directoy then execute following command:
 ```
 ./UrlShortenerCrossPlatform.dll
 ```
+#### Simple usage
+-s is optional argument that is a integer for selecting service (you can find services in help menu)<br>
+-l is required argument that is long url you want to shot it.
+```
+./UrlShortenerCrossPlatform.dll -s 3 -l https://github.com/ghost1372
+```
 ## Compile Project on Linux or Mac
 First Step: you must install prerequisites library<br>
 Second Step: clone project
