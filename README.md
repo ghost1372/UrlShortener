@@ -12,6 +12,7 @@ A simple program to shorten links
 Any contributions will be accepted
 
 # Linux and Mac Version
+CrossPlatform version Written by DotNet Core<br>
 you can access Linux and Mac version via two way!<br>
 1.Precompiled Binary [Download it from [here](https://github.com/ghost1372/UrlShortener/releases))]<br>
 2.Compile Project on Linux or Mac
