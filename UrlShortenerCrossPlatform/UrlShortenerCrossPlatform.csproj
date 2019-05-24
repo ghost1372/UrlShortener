@@ -6,6 +6,8 @@
     <ApplicationIcon>icon.ico</ApplicationIcon>
     <Authors>Mahdi Hosseini</Authors>
     <Company>Mahdi Hosseini</Company>
+    <AssemblyVersion>1.0.2.0</AssemblyVersion>
+    <FileVersion>1.0.2.0</FileVersion>
 
   </PropertyGroup>
 

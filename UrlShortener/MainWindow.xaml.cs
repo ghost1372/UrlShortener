@@ -1,5 +1,6 @@
 ﻿using HandyControl.Controls;
 using HandyControl.Data;
+using HandyControl.Tools;
 using Microsoft.CSharp.RuntimeBinder;
 using Microsoft.Win32;
 using Newtonsoft.Json;
@@ -607,7 +608,14 @@ namespace UrlShortener
         {
             if (GlobalData.Config.NotifyIconIsShow)
             {
-                HandyControl.Controls.MessageBox.Info("The tray icon is open and will hide the window instead of closing the program", "Url Shotener");
+                HandyControl.Controls.MessageBox.Show(new MessageBoxInfo
+                {
+                    MessageBoxText = "The tray icon is open and will hide the window instead of closing the program",
+                    Caption = "Url Shotener",
+                    IconBrushKey = ResourceToken.AccentBrush,
+                    IconKey = ResourceToken.InfoGeometry,
+                    Style = ResourceHelper.GetResource<Style>("MessageBoxCustom")
+                });
                 Hide();
                 e.Cancel = true;
             }
