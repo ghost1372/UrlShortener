@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -41,14 +42,14 @@ namespace UrlShortener
             {
                 cmbListService.SelectedIndex = cmbService.SelectedIndex = GlobalData.Config.ServiceIndex;
                 tgTop.IsChecked = Topmost = GlobalData.Config.TopMost;
+                tgNotify.IsChecked = GlobalData.Config.NotifyIconIsShow;
 
-                Title = "Url Shorter " + getAppVersion;
+                Title = "Url Shortener " + getAppVersion;
             }
             catch (Exception)
             {
             }
         }
-
         private void ToggleButton_Checked(object sender, RoutedEventArgs e)
         {
             Topmost = tgTop.IsChecked.Value;
@@ -601,6 +602,25 @@ namespace UrlShortener
                 GlobalData.Save();
                 ((App)Application.Current).UpdateSkin(tag);
             }
+        }
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            if (GlobalData.Config.NotifyIconIsShow)
+            {
+                HandyControl.Controls.MessageBox.Info("The tray icon is open and will hide the window instead of closing the program", "Url Shotener");
+                Hide();
+                e.Cancel = true;
+            }
+            else
+            {
+                base.OnClosing(e);
+            }
+        }
+
+        private void TgNotify_Checked(object sender, RoutedEventArgs e)
+        {
+            GlobalData.Config.NotifyIconIsShow = tgNotify.IsChecked.Value;
+            GlobalData.Save();
         }
     }
 }

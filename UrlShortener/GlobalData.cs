@@ -12,6 +12,7 @@ namespace UrlShortener
             public static readonly string SavePath = $"{AppDomain.CurrentDomain.BaseDirectory}AppConfig.json";
 
             public bool TopMost { get; set; } = true;
+            public bool NotifyIconIsShow { get; set; } = true;
             public int ServiceIndex { get; set; } = 0;
             public SkinType Skin { get; set; } = SkinType.Violet;
         }

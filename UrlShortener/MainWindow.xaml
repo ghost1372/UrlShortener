@@ -6,6 +6,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:UrlShortener"
     xmlns:enum="clr-namespace:HandyControl.Data;assembly=HandyControl"
+    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+    xmlns:interactivity="clr-namespace:HandyControl.Interactivity;assembly=HandyControl"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Width="600"
     Height="220"
@@ -88,10 +90,17 @@
                         </Button>
                         <StackPanel
                          Orientation="Horizontal">
-                            <TextBlock Margin="10" Foreground="Black" Text="TopMost" />
+                            <TextBlock Margin="10" Foreground="Black" Text="Top Most" />
                             <ToggleButton Name="tgTop" Checked="ToggleButton_Checked"
                                           Style="{StaticResource ToggleButtonSwitch}"
                                           Unchecked="ToggleButton_Checked" />
+                        </StackPanel>
+                        <StackPanel
+                         Orientation="Horizontal">
+                            <TextBlock Margin="10" Foreground="Black" Text="Hide To NotifyIcon" />
+                            <ToggleButton Name="tgNotify" Checked="TgNotify_Checked"
+                                          Style="{StaticResource ToggleButtonSwitch}"
+                                          Unchecked="TgNotify_Checked" />
                         </StackPanel>
                     </StackPanel>
                 </Border>
@@ -102,7 +111,6 @@
     </controls:BlurWindow.NonClientAreaContent>
     <controls:TransitioningContentControl>
         <Grid>
-
             <TabControl Background="Transparent" Name="tabc">
                 <TabItem Background="Transparent" Header="Home">
                     <StackPanel
@@ -143,7 +151,7 @@
                                             <DataTrigger Binding="{Binding SelectedIndex, ElementName=cmbService}" Value="4">
                                                 <Setter Property="Width" Value="280" />
                                             </DataTrigger>
-                                            
+
                                         </Style.Triggers>
                                     </Style>
                                 </TextBox.Style>
@@ -304,6 +312,14 @@
                     Background="Transparent"
                     IsHitTestVisible="True" />
             </controls:ScrollViewer>
+            <controls:NotifyIcon Text="Url Shortener" IsBlink="{Binding ContextMenuIsBlink}" Visibility="{Binding ElementName=tgNotify, Path=IsChecked,Converter={StaticResource Boolean2VisibilityConverter}}">
+                <controls:NotifyIcon.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Command="interactivity:ControlCommands.PushMainWindow2Top" Header="Open Panel"/>
+                        <MenuItem Command="interactivity:ControlCommands.ShutdownApp" Header="Exit"/>
+                    </ContextMenu>
+                </controls:NotifyIcon.ContextMenu>
+            </controls:NotifyIcon>
         </Grid>
     </controls:TransitioningContentControl>
 </controls:BlurWindow>
