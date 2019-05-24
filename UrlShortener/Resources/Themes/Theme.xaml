@@ -2,7 +2,6 @@
 
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="Basic/Basic.xaml"/>
-        <ResourceDictionary Source="Styles/Style.xaml"/>
     </ResourceDictionary.MergedDictionaries>
 
 </ResourceDictionary>

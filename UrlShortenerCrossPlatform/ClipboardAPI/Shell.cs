@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
+﻿using System.Diagnostics;
 
 namespace UrlShortenerCrossPlatform.ClipboardAPI
 {
@@ -9,21 +6,21 @@ namespace UrlShortenerCrossPlatform.ClipboardAPI
     {
         public static string Bash(this string cmd)
         {
-            var escapedArgs = cmd.Replace("\"", "\\\"");
+            string escapedArgs = cmd.Replace("\"", "\\\"");
             string result = Run("/bin/bash", $"-c \"{escapedArgs}\"");
             return result;
         }
 
         public static string Bat(this string cmd)
         {
-            var escapedArgs = cmd.Replace("\"", "\\\"");
+            string escapedArgs = cmd.Replace("\"", "\\\"");
             string result = Run("cmd.exe", $"/c \"{escapedArgs}\"");
             return result;
         }
 
         private static string Run(string filename, string arguments)
         {
-            var process = new Process()
+            Process process = new Process()
             {
                 StartInfo = new ProcessStartInfo
                 {

@@ -1,16 +1,19 @@
-﻿<controls:WindowBorderless
+﻿<controls:BlurWindow
     x:Class="UrlShortener.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="clr-namespace:HandyControl.Controls;assembly=HandyControl"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:UrlShortener"
+    xmlns:enum="clr-namespace:HandyControl.Data;assembly=HandyControl"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Width="600"
     Height="220"
-    Foreground="WhiteSmoke"
     NonClientAreaBackground="#3c3c3c"
-    OtherButtonHoverBrush="#888580"
+    OtherButtonHoverBackground="#888580"
+    NonClientAreaForeground="WhiteSmoke"
+    CloseButtonForeground="{DynamicResource DangerBrush}"
+    OtherButtonForeground="{DynamicResource WarningBrush}"
     ShowInTaskbar="True"
     ShowTitle="True"
     ResizeMode="CanMinimize"
@@ -18,8 +21,8 @@
     UseLayoutRounding="True"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
-    <controls:WindowBorderless.Style>
-        <Style BasedOn="{StaticResource CustomWindowStyle}" TargetType="controls:WindowBorderless">
+    <controls:BlurWindow.Style>
+        <Style BasedOn="{StaticResource WindowBlur}" TargetType="controls:BlurWindow">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding ElementName=tabc, Path=SelectedIndex}" Value="1">
                     <DataTrigger.EnterActions>
@@ -45,8 +48,8 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
-    </controls:WindowBorderless.Style>
-    <controls:WindowBorderless.NonClientAreaContent>
+    </controls:BlurWindow.Style>
+    <controls:BlurWindow.NonClientAreaContent>
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
@@ -69,38 +72,46 @@
                         Tag="About" />
                 </Menu>
             </StackPanel>
-            <StackPanel
-                Grid.Column="1"
-                Margin="10,0,10,0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Center"
-                Background="Transparent"
-                Orientation="Horizontal">
-                <TextBlock
-                    Margin="0,3,10,0"
-                    Foreground="WhiteSmoke"
-                    Text="TopMost" />
-                <ToggleButton
-                    Name="tgTop"
-                    Background="Transparent"
-                    Checked="ToggleButton_Checked"
-                    Style="{StaticResource ToggleButtonSwitch}"
-                    Unchecked="ToggleButton_Checked" />
-            </StackPanel>
+            <Button Click="ButtonConfig_Click" Grid.Column="1" Name="ButtonConfig" Style="{StaticResource ButtonIcon}" controls:IconElement.Geometry="{StaticResource ConfigGeometry}"/>
+
+            <Popup StaysOpen="False" AllowsTransparency="True" Grid.Column="1" PlacementTarget="{Binding ElementName=ButtonConfig}" x:Name="popupConfig">
+                <Border Background="{DynamicResource SecondaryRegionBrush}" CornerRadius="4" Margin="16" Effect="{StaticResource EffectShadow2}">
+                    <StackPanel Button.Click="StackPanel_Click" Margin="10">
+                        <Button Tag="{x:Static enum:SkinType.Default}" Style="{StaticResource ButtonCustom}">
+                            <Border Background="White" Width="32" Height="21" CornerRadius="2" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}"/>
+                        </Button>
+                        <Button Tag="{x:Static enum:SkinType.Dark}" Style="{StaticResource ButtonCustom}">
+                            <Border Background="Black" Width="32" Height="21" CornerRadius="2" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}"/>
+                        </Button>
+                        <Button Tag="{x:Static enum:SkinType.Violet}" Style="{StaticResource ButtonCustom}">
+                            <Border Background="Purple" Width="32" Height="21" CornerRadius="2" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}"/>
+                        </Button>
+                        <StackPanel
+                         Orientation="Horizontal">
+                            <TextBlock Margin="10" Foreground="Black" Text="TopMost" />
+                            <ToggleButton Name="tgTop" Checked="ToggleButton_Checked"
+                                          Style="{StaticResource ToggleButtonSwitch}"
+                                          Unchecked="ToggleButton_Checked" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Popup>
+           
         </Grid>
 
-    </controls:WindowBorderless.NonClientAreaContent>
+    </controls:BlurWindow.NonClientAreaContent>
     <controls:TransitioningContentControl>
         <Grid>
 
-            <TabControl Name="tabc">
-                <TabItem Header="Home">
+            <TabControl Background="Transparent" Name="tabc">
+                <TabItem Background="Transparent" Header="Home">
                     <StackPanel
                         MaxWidth="800"
                         Margin="10,10,10,0"
                         VerticalAlignment="Top">
                         <ComboBox
                             x:Name="cmbService"
+                            Background="Transparent"
                             Width="240"
                             IsEditable="True"
                             Margin="0,0,0,10"
@@ -111,13 +122,13 @@
                             <ComboBoxItem Content="Yon" />
                             <ComboBoxItem Content="Opizo" />
                             <ComboBoxItem Content="Bitly" />
-                            <ComboBoxItem Content="Atrab" />
                             <ComboBoxItem Content="PLink" />
                             <ComboBoxItem Content="Do0" />
                         </ComboBox>
                         <StackPanel Orientation="Horizontal">
                             <TextBox
                                 Name="txtUrl"
+                                Background="Transparent"
                                 controls:InfoElement.ContentHeight="35"
                                 controls:InfoElement.Necessary="True"
                                 controls:InfoElement.Placeholder="Type Url Here..."
@@ -139,6 +150,7 @@
                             </TextBox>
                             <TextBox
                                 Name="txtCustom"
+                                Background="Transparent"
                                 Width="140"
                                 Margin="10,0,5,0"
                                 controls:InfoElement.ContentHeight="35"
@@ -192,7 +204,7 @@
                         </StackPanel>
                     </StackPanel>
                 </TabItem>
-                <TabItem Header="List">
+                <TabItem Background="Transparent" Header="List">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -211,6 +223,7 @@
                             </StackPanel>
                             <ComboBox
                                 x:Name="cmbListService"
+                                 Background="Transparent"
                                 Margin="10,0,10,0"
                                 IsEditable="True"
                                 controls:InfoElement.Placeholder="Select Url Shortener Service"
@@ -218,7 +231,6 @@
                                 <ComboBoxItem Content="Yon" />
                                 <ComboBoxItem Content="Opizo" />
                                 <ComboBoxItem Content="Bitly" />
-                                <ComboBoxItem Content="Atrab" />
                                 <ComboBoxItem Content="PLink" />
                                 <ComboBoxItem Content="Do0" />
                             </ComboBox>
@@ -294,4 +306,4 @@
             </controls:ScrollViewer>
         </Grid>
     </controls:TransitioningContentControl>
-</controls:WindowBorderless>
+</controls:BlurWindow>

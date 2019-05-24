@@ -1,32 +1,35 @@
-﻿using System;
+﻿using HandyControl.Controls;
+using HandyControl.Data;
+using Microsoft.CSharp.RuntimeBinder;
+using Microsoft.Win32;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Script.Serialization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using System.Xml.Linq;
-using HandyControl.Controls;
-using HandyControl.Data;
-using Microsoft.CSharp.RuntimeBinder;
-using Microsoft.Win32;
-using Newtonsoft.Json;
-using UrlShortener.Properties;
 
 namespace UrlShortener
 {
     /// <summary>
     ///     Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : WindowBorderless
+    public partial class MainWindow : BlurWindow
     {
+        private static readonly HttpClient client = new HttpClient();
+
         private readonly List<ShorterList> shorterList = new List<ShorterList>();
 
         public MainWindow()
@@ -36,11 +39,9 @@ namespace UrlShortener
             //get default values
             try
             {
-                cmbService.SelectedIndex = Settings.Default.Setting;
-                cmbListService.SelectedIndex = Settings.Default.Setting;
-                var topMost = Settings.Default.TopMost;
-                tgTop.IsChecked = topMost;
-                Topmost = topMost;
+                cmbListService.SelectedIndex = cmbService.SelectedIndex = GlobalData.Config.ServiceIndex;
+                tgTop.IsChecked = Topmost = GlobalData.Config.TopMost;
+
                 Title = "Url Shorter " + getAppVersion;
             }
             catch (Exception)
@@ -50,18 +51,14 @@ namespace UrlShortener
 
         private void ToggleButton_Checked(object sender, RoutedEventArgs e)
         {
-            if (tgTop.IsChecked == true)
-                Settings.Default.TopMost = true;
-            else
-                Settings.Default.TopMost = false;
-
-            Settings.Default.Save();
             Topmost = tgTop.IsChecked.Value;
+            GlobalData.Config.TopMost = tgTop.IsChecked.Value;
+            GlobalData.Save();
         }
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
-            var tag = sender as MenuItem;
+            MenuItem tag = sender as MenuItem;
             switch (tag.Tag)
             {
                 case "Update":
@@ -70,7 +67,7 @@ namespace UrlShortener
 
                 case "About":
                     Growl.Info(new GrowlInfo
-                        {Message = "Coded by Mahdi Hosseini\n Contact: mahdidvb72@gmail.com", ShowDateTime = false});
+                    { Message = "Coded by Mahdi Hosseini\n Contact: mahdidvb72@gmail.com", ShowDateTime = false });
                     break;
             }
         }
@@ -117,46 +114,32 @@ namespace UrlShortener
 
         #region Shorten Services
 
-        //get Method
-        public string AtrabIr(string longUrl)
-        {
-            var link = string.Empty;
-            using (var wb = new WebClient())
-            {
-                var response = wb.DownloadString("http://s.atrab.ir/api.php?url=" + longUrl);
-                var root = JsonConvert.DeserializeObject<AtrabRootObject>(response);
-                link = root.data.@short;
-            }
-
-            return link;
-        }
-
         public string BitlyShorten(string longUrl)
         {
-            var url = string.Format(
+            string url = string.Format(
                 "http://api.bit.ly/shorten?format=json&version=2.0.1&longUrl={0}&login={1}&apiKey={2}",
                 HttpUtility.UrlEncode(longUrl), BitlyLoginKey, BitlyApiKey);
 
-            var request = (HttpWebRequest) WebRequest.Create(url);
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             try
             {
-                var response = request.GetResponse();
-                using (var responseStream = response.GetResponseStream())
+                WebResponse response = request.GetResponse();
+                using (Stream responseStream = response.GetResponseStream())
                 {
-                    var reader = new StreamReader(responseStream, Encoding.UTF8);
-                    var js = new JavaScriptSerializer();
-                    var jsonResponse = js.Deserialize<dynamic>(reader.ReadToEnd());
+                    StreamReader reader = new StreamReader(responseStream, Encoding.UTF8);
+                    JavaScriptSerializer js = new JavaScriptSerializer();
+                    dynamic jsonResponse = js.Deserialize<dynamic>(reader.ReadToEnd());
                     string s = jsonResponse["results"][longUrl]["shortUrl"];
                     return s;
                 }
             }
             catch (WebException ex)
             {
-                var errorResponse = ex.Response;
-                using (var responseStream = errorResponse.GetResponseStream())
+                WebResponse errorResponse = ex.Response;
+                using (Stream responseStream = errorResponse.GetResponseStream())
                 {
-                    var reader = new StreamReader(responseStream, Encoding.GetEncoding("utf-8"));
-                    var errorText = reader.ReadToEnd();
+                    StreamReader reader = new StreamReader(responseStream, Encoding.GetEncoding("utf-8"));
+                    string errorText = reader.ReadToEnd();
                     Growl.Error(errorText);
                 }
 
@@ -171,64 +154,80 @@ namespace UrlShortener
 
         public string PlinkShorten(string longUrl, string customURL = "")
         {
-            var link = string.Empty;
-            using (var wb = new WebClient())
+            string link = string.Empty;
+            using (WebClient wb = new WebClient())
             {
-                var utf8 = new UTF8Encoding();
-                var utf8Encoded = HttpUtility.UrlEncode(longUrl, utf8);
+                UTF8Encoding utf8 = new UTF8Encoding();
+                string utf8Encoded = HttpUtility.UrlEncode(longUrl, utf8);
 
-                var response = wb.DownloadString("https://plink.ir/api?api=" + PlinkApiKey + "& url=" + utf8Encoded +
+                string response = wb.DownloadString("https://plink.ir/api?api=" + PlinkApiKey + "& url=" + utf8Encoded +
                                                  "&custom=" + customURL);
-                var root = JsonConvert.DeserializeObject<PlinkData>(response);
+                PlinkData root = JsonConvert.DeserializeObject<PlinkData>(response);
                 if (root.error.Contains("0"))
+                {
                     link = root.@short;
+                }
                 else
+                {
                     Growl.Error(root.msg);
+                }
             }
 
             return link;
         }
 
-        public string Do0Shorten(string longUrl)
+
+        public async Task<string> Do0Shorten(string longUrl)
         {
-            var link = string.Empty;
+            string link = string.Empty;
 
-            using (var wb = new WebClient())
+            Dictionary<string, string> values = new Dictionary<string, string>
+                {
+                   { "link", longUrl }
+                };
+
+            FormUrlEncodedContent content = new FormUrlEncodedContent(values);
+
+            HttpResponseMessage response = await client.PostAsync("https://do0.ir/post/SJAj4Ik6Q9Rd/2.5", content);
+
+            string responseString = await response.Content.ReadAsStringAsync();
+            Do0Data root = JsonConvert.DeserializeObject<Do0Data>(responseString);
+            if (root.success)
             {
-                var data = new NameValueCollection();
-                data["link"] = longUrl;
-                var response = wb.UploadValues("https://do0.ir/post/SJAj4Ik6Q9Rd/2.5", "POST", data);
-                var responseInString = Encoding.UTF8.GetString(response);
-
-                var root = JsonConvert.DeserializeObject<Do0Data>(responseInString);
-
-                if (root.success)
-                    link = root.@short;
-                else
-                    Growl.Error(root.error);
+                link = "https://do0.ir/" + root.@short;
+            }
+            else
+            {
+                Growl.Error(root.error);
             }
 
-            return "https://do0.ir/" + link;
+            return link;
         }
 
         public string OpizoShorten(string longUrl)
         {
-            var link = string.Empty;
+            string link = string.Empty;
 
-            using (var wb = new WebClient())
+            using (WebClient wb = new WebClient())
             {
                 wb.Headers.Add("X-API-KEY", OpizoApiKey);
-                var data = new NameValueCollection();
-                data["url"] = longUrl;
-                var response = wb.UploadValues("https://opizo.com/api/v1/shrink/", "POST", data);
-                var responseInString = Encoding.UTF8.GetString(response);
+                NameValueCollection data = new NameValueCollection
+                {
+                    ["url"] = longUrl
+                };
+                byte[] response = wb.UploadValues("https://opizo.com/api/v1/shrink/", "POST", data);
+                string responseInString = Encoding.UTF8.GetString(response);
 
-                var root = JsonConvert.DeserializeObject<OpizoRootObject>(responseInString);
+                OpizoRootObject root = JsonConvert.DeserializeObject<OpizoRootObject>(responseInString);
 
                 if (root.status.Equals("success"))
+                {
                     link = root.data.url;
+                }
                 else
+                {
                     Growl.Error("something is wrong try again");
+                }
             }
 
             return link;
@@ -236,20 +235,26 @@ namespace UrlShortener
 
         public string YonShorten(string longUrl, string customURL = "")
         {
-            var link = string.Empty;
-            using (var wb = new WebClient())
+            string link = string.Empty;
+            using (WebClient wb = new WebClient())
             {
-                var data = new NameValueCollection();
-                data["url"] = longUrl;
-                data["wish"] = customURL;
+                NameValueCollection data = new NameValueCollection
+                {
+                    ["url"] = longUrl,
+                    ["wish"] = customURL
+                };
 
-                var response = wb.UploadValues("http://api.yon.ir", "POST", data);
-                var responseInString = Encoding.UTF8.GetString(response);
-                var result = JsonConvert.DeserializeObject<Yon>(responseInString);
+                byte[] response = wb.UploadValues("http://api.yon.ir", "POST", data);
+                string responseInString = Encoding.UTF8.GetString(response);
+                Yon result = JsonConvert.DeserializeObject<Yon>(responseInString);
                 if (result.status)
+                {
                     link = "http://yon.ir/" + result.output;
+                }
                 else
+                {
                     Growl.Error("that custom URL is already taken");
+                }
             }
 
             return link;
@@ -313,29 +318,39 @@ namespace UrlShortener
         private void txtUrl_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (string.IsNullOrEmpty(txtUrl.Text))
+            {
                 btn.IsEnabled = false;
+            }
 
-            Uri uriResult;
-            var result = Uri.TryCreate(txtUrl.Text, UriKind.Absolute, out uriResult)
+            bool result = Uri.TryCreate(txtUrl.Text, UriKind.Absolute, out Uri uriResult)
                          && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
 
             if (result)
+            {
                 btn.IsEnabled = true;
+            }
             else
+            {
                 btn.IsEnabled = false;
+            }
 
             stck.Visibility = Visibility.Hidden;
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private async void Button_Click(object sender, RoutedEventArgs e)
         {
             switch (cmbService.SelectedIndex)
             {
                 case 0:
                     if (string.IsNullOrEmpty(txtCustom.Text))
+                    {
                         txtUrl.Text = YonShorten(txtUrl.Text);
+                    }
                     else
+                    {
                         txtUrl.Text = YonShorten(txtUrl.Text, txtCustom.Text);
+                    }
+
                     break;
 
                 case 1:
@@ -347,17 +362,18 @@ namespace UrlShortener
                     break;
 
                 case 3:
-                    txtUrl.Text = AtrabIr(txtUrl.Text);
-                    break;
-
-                case 4:
                     if (string.IsNullOrEmpty(txtCustom.Text))
+                    {
                         txtUrl.Text = PlinkShorten(txtUrl.Text);
+                    }
                     else
+                    {
                         txtUrl.Text = PlinkShorten(txtUrl.Text, txtCustom.Text);
+                    }
+
                     break;
-                case 5:
-                    txtUrl.Text = Do0Shorten(txtUrl.Text);
+                case 4:
+                    txtUrl.Text = await Do0Shorten(txtUrl.Text);
                     break;
             }
 
@@ -367,8 +383,8 @@ namespace UrlShortener
 
         private void cmbService_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            Settings.Default.Setting = cmbService.SelectedIndex;
-            Settings.Default.Save();
+            GlobalData.Config.ServiceIndex = cmbService.SelectedIndex;
+            GlobalData.Save();
         }
 
         #endregion
@@ -378,17 +394,21 @@ namespace UrlShortener
         private void btnLoad_Click(object sender, RoutedEventArgs e)
         {
             shorterList.Clear();
-            var theDialog = new OpenFileDialog();
-            theDialog.Title = "Open Text File";
-            theDialog.Filter = "TXT files|*.txt";
+            OpenFileDialog theDialog = new OpenFileDialog
+            {
+                Title = "Open Text File",
+                Filter = "TXT files|*.txt"
+            };
             if (theDialog.ShowDialog() == true)
             {
-                var filename = theDialog.FileName;
+                string filename = theDialog.FileName;
 
-                var filelines = File.ReadAllLines(filename);
+                string[] filelines = File.ReadAllLines(filename);
 
-                foreach (var item in filelines)
-                    shorterList.Add(new ShorterList {Link = item});
+                foreach (string item in filelines)
+                {
+                    shorterList.Add(new ShorterList { Link = item });
+                }
 
                 dataGrid.ItemsSource = shorterList;
             }
@@ -401,31 +421,28 @@ namespace UrlShortener
                 try
                 {
                     shorterList.Clear();
-                    for (var i = 0; i < dataGrid.SelectedItems.Count; i++)
+                    for (int i = 0; i < dataGrid.SelectedItems.Count; i++)
                     {
                         dynamic selectedItem = dataGrid.SelectedItems[i];
-                        var longLink = selectedItem.Link;
+                        dynamic longLink = selectedItem.Link;
                         switch (cmbListService.SelectedIndex)
                         {
                             case 0:
-                                shorterList.Add(new ShorterList {ShortLink = YonShorten(longLink)});
+                                shorterList.Add(new ShorterList { ShortLink = YonShorten(longLink) });
                                 break;
 
                             case 1:
-                                shorterList.Add(new ShorterList {ShortLink = OpizoShorten(longLink)});
+                                shorterList.Add(new ShorterList { ShortLink = OpizoShorten(longLink) });
                                 break;
 
                             case 2:
-                                shorterList.Add(new ShorterList {ShortLink = BitlyShorten(longLink)});
+                                shorterList.Add(new ShorterList { ShortLink = BitlyShorten(longLink) });
                                 break;
 
                             case 3:
-                                shorterList.Add(new ShorterList {ShortLink = AtrabIr(longLink)});
+                                shorterList.Add(new ShorterList { ShortLink = PlinkShorten(longLink) });
                                 break;
                             case 4:
-                                shorterList.Add(new ShorterList {ShortLink = PlinkShorten(longLink)});
-                                break;
-                            case 5:
                                 shorterList.Add(new ShorterList { ShortLink = Do0Shorten(longLink) });
                                 break;
                         }
@@ -435,11 +452,16 @@ namespace UrlShortener
                 {
                 }
 
-                var oDialog = new SaveFileDialog();
-                oDialog.Title = "Save Text File";
-                oDialog.Filter = "TXT files|*.txt";
+                SaveFileDialog oDialog = new SaveFileDialog
+                {
+                    Title = "Save Text File",
+                    Filter = "TXT files|*.txt"
+                };
                 if (oDialog.ShowDialog() == true)
+                {
                     File.WriteAllLines(oDialog.FileName, shorterList.Select(x => x.ShortLink));
+                }
+
                 dataGrid.ItemsSource = null;
             }), DispatcherPriority.Background);
         }
@@ -456,13 +478,13 @@ namespace UrlShortener
                 ChangeLog = string.Empty;
                 url = "";
 
-                var doc = XDocument.Load(UpdateServer);
-                var items = doc
+                XDocument doc = XDocument.Load(UpdateServer);
+                IEnumerable<XElement> items = doc
                     .Element(XName.Get(UpdateXmlTag))
                     .Elements(XName.Get(UpdateXmlChildTag));
-                var versionItem = items.Select(ele => ele.Element(XName.Get(UpdateVersionTag)).Value);
-                var urlItem = items.Select(ele => ele.Element(XName.Get(UpdateUrlTag)).Value);
-                var changelogItem = items.Select(ele => ele.Element(XName.Get(UpdateChangeLogTag)).Value);
+                IEnumerable<string> versionItem = items.Select(ele => ele.Element(XName.Get(UpdateVersionTag)).Value);
+                IEnumerable<string> urlItem = items.Select(ele => ele.Element(XName.Get(UpdateUrlTag)).Value);
+                IEnumerable<string> changelogItem = items.Select(ele => ele.Element(XName.Get(UpdateChangeLogTag)).Value);
 
                 newVersion = versionItem.FirstOrDefault();
                 url = urlItem.FirstOrDefault();
@@ -485,11 +507,14 @@ namespace UrlShortener
                     ActionBeforeClose = isConfirm =>
                     {
                         if (isConfirm)
+                        {
                             Process.Start(url);
+                        }
 
                         return true;
                     },
-                    CancelStr = "Cancel", ConfirmStr = "Confirm"
+                    CancelStr = "Cancel",
+                    ConfirmStr = "Confirm"
                 });
                 Growl.Info(ChangeLog);
             }
@@ -502,41 +527,80 @@ namespace UrlShortener
         public static bool IsVersionLater(string newVersion, string oldVersion)
         {
             // split into groups
-            var cur = newVersion.Split('.');
-            var cmp = oldVersion.Split('.');
+            string[] cur = newVersion.Split('.');
+            string[] cmp = oldVersion.Split('.');
             // get max length and fill the shorter one with zeros
-            var len = Math.Max(cur.Length, cmp.Length);
-            var vs = new int[len];
-            var cs = new int[len];
+            int len = Math.Max(cur.Length, cmp.Length);
+            int[] vs = new int[len];
+            int[] cs = new int[len];
             Array.Clear(vs, 0, len);
             Array.Clear(cs, 0, len);
-            var idx = 0;
+            int idx = 0;
             // skip non digits
-            foreach (var n in cur)
+            foreach (string n in cur)
             {
-                if (!int.TryParse(n, out vs[idx])) vs[idx] = -999; // mark for skip later
+                if (!int.TryParse(n, out vs[idx]))
+                {
+                    vs[idx] = -999; // mark for skip later
+                }
+
                 idx++;
             }
 
             idx = 0;
-            foreach (var n in cmp)
+            foreach (string n in cmp)
             {
-                if (!int.TryParse(n, out cs[idx])) cs[idx] = -999; // mark for skip later
+                if (!int.TryParse(n, out cs[idx]))
+                {
+                    cs[idx] = -999; // mark for skip later
+                }
+
                 idx++;
             }
 
-            for (var i = 0; i < len; i++)
+            for (int i = 0; i < len; i++)
             {
                 // skip non digits
-                if (vs[i] == -999 || cs[i] == -999) continue;
+                if (vs[i] == -999 || cs[i] == -999)
+                {
+                    continue;
+                }
+
                 if (vs[i] < cs[i])
+                {
                     return false;
-                if (vs[i] > cs[i]) return true;
+                }
+
+                if (vs[i] > cs[i])
+                {
+                    return true;
+                }
             }
 
             return false;
         }
 
         #endregion
+
+        private void ButtonConfig_Click(object sender, RoutedEventArgs e)
+        {
+            popupConfig.IsOpen = true;
+        }
+
+        private void StackPanel_Click(object sender, RoutedEventArgs e)
+        {
+            if (e.OriginalSource is Button button && button.Tag is SkinType tag)
+            {
+                popupConfig.IsOpen = false;
+                if (tag.Equals(GlobalData.Config.Skin))
+                {
+                    return;
+                }
+
+                GlobalData.Config.Skin = tag;
+                GlobalData.Save();
+                ((App)Application.Current).UpdateSkin(tag);
+            }
+        }
     }
 }

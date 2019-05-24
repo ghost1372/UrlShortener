@@ -1,20 +1,18 @@
 ﻿using CommandLine;
+using Microsoft.CSharp.RuntimeBinder;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Specialized;
-using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Web;
-using Microsoft.CSharp.RuntimeBinder;
-using Newtonsoft.Json;
 using UrlShortenerCrossPlatform.ClipboardAPI;
 
 namespace UrlShortenerCrossPlatform
 {
-    class Program
+    internal class Program
     {
         private static string currentLink = string.Empty;
         #region API Key
@@ -32,11 +30,11 @@ namespace UrlShortenerCrossPlatform
         //get Method
         public static string AtrabIr(string longUrl)
         {
-            var link = string.Empty;
-            using (var wb = new WebClient())
+            string link = string.Empty;
+            using (WebClient wb = new WebClient())
             {
-                var response = wb.DownloadString("http://s.atrab.ir/api.php?url=" + longUrl);
-                var root = JsonConvert.DeserializeObject<AtrabRootObject>(response);
+                string response = wb.DownloadString("http://s.atrab.ir/api.php?url=" + longUrl);
+                AtrabRootObject root = JsonConvert.DeserializeObject<AtrabRootObject>(response);
                 link = root.data.@short;
             }
 
@@ -45,29 +43,29 @@ namespace UrlShortenerCrossPlatform
 
         public static string BitlyShorten(string longUrl)
         {
-            var url = string.Format(
+            string url = string.Format(
                 "http://api.bit.ly/shorten?format=json&version=2.0.1&longUrl={0}&login={1}&apiKey={2}",
                 HttpUtility.UrlEncode(longUrl), BitlyLoginKey, BitlyApiKey);
 
-            var request = (HttpWebRequest)WebRequest.Create(url);
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             try
             {
-                var response = request.GetResponse();
-                using (var responseStream = response.GetResponseStream())
+                WebResponse response = request.GetResponse();
+                using (Stream responseStream = response.GetResponseStream())
                 {
-                    var reader = new StreamReader(responseStream, Encoding.UTF8);
-                    var jsonResponse = JsonConvert.DeserializeObject<dynamic>(reader.ReadToEnd());
+                    StreamReader reader = new StreamReader(responseStream, Encoding.UTF8);
+                    dynamic jsonResponse = JsonConvert.DeserializeObject<dynamic>(reader.ReadToEnd());
                     string s = jsonResponse["results"][longUrl]["shortUrl"];
                     return s;
                 }
             }
             catch (WebException ex)
             {
-                var errorResponse = ex.Response;
-                using (var responseStream = errorResponse.GetResponseStream())
+                WebResponse errorResponse = ex.Response;
+                using (Stream responseStream = errorResponse.GetResponseStream())
                 {
-                    var reader = new StreamReader(responseStream, Encoding.GetEncoding("utf-8"));
-                    var errorText = reader.ReadToEnd();
+                    StreamReader reader = new StreamReader(responseStream, Encoding.GetEncoding("utf-8"));
+                    string errorText = reader.ReadToEnd();
                     Console.WriteLine(errorText);
                 }
 
@@ -82,19 +80,23 @@ namespace UrlShortenerCrossPlatform
 
         public static string PlinkShorten(string longUrl, string customURL = "")
         {
-            var link = string.Empty;
-            using (var wb = new WebClient())
+            string link = string.Empty;
+            using (WebClient wb = new WebClient())
             {
-                var utf8 = new UTF8Encoding();
-                var utf8Encoded = HttpUtility.UrlEncode(longUrl, utf8);
+                UTF8Encoding utf8 = new UTF8Encoding();
+                string utf8Encoded = HttpUtility.UrlEncode(longUrl, utf8);
 
-                var response = wb.DownloadString("https://plink.ir/api?api=" + PlinkApiKey + "& url=" + utf8Encoded +
+                string response = wb.DownloadString("https://plink.ir/api?api=" + PlinkApiKey + "& url=" + utf8Encoded +
                                                  "&custom=" + customURL);
-                var root = JsonConvert.DeserializeObject<PlinkData>(response);
+                PlinkData root = JsonConvert.DeserializeObject<PlinkData>(response);
                 if (root.error.Contains("0"))
+                {
                     link = root.@short;
+                }
                 else
+                {
                     Console.WriteLine(root.msg);
+                }
             }
 
             return link;
@@ -102,21 +104,27 @@ namespace UrlShortenerCrossPlatform
 
         public static string Do0Shorten(string longUrl)
         {
-            var link = string.Empty;
+            string link = string.Empty;
 
-            using (var wb = new WebClient())
+            using (WebClient wb = new WebClient())
             {
-                var data = new NameValueCollection();
-                data["link"] = longUrl;
-                var response = wb.UploadValues("https://do0.ir/post/SJAj4Ik6Q9Rd/2.5", "POST", data);
-                var responseInString = Encoding.UTF8.GetString(response);
+                NameValueCollection data = new NameValueCollection
+                {
+                    ["link"] = longUrl
+                };
+                byte[] response = wb.UploadValues("https://do0.ir/post/SJAj4Ik6Q9Rd/2.5", "POST", data);
+                string responseInString = Encoding.UTF8.GetString(response);
 
-                var root = JsonConvert.DeserializeObject<Do0Data>(responseInString);
+                Do0Data root = JsonConvert.DeserializeObject<Do0Data>(responseInString);
 
                 if (root.success)
+                {
                     link = root.@short;
+                }
                 else
+                {
                     Console.WriteLine(root.error);
+                }
             }
 
             return "https://do0.ir/" + link;
@@ -124,22 +132,28 @@ namespace UrlShortenerCrossPlatform
 
         public static string OpizoShorten(string longUrl)
         {
-            var link = string.Empty;
+            string link = string.Empty;
 
-            using (var wb = new WebClient())
+            using (WebClient wb = new WebClient())
             {
                 wb.Headers.Add("X-API-KEY", OpizoApiKey);
-                var data = new NameValueCollection();
-                data["url"] = longUrl;
-                var response = wb.UploadValues("https://opizo.com/api/v1/shrink/", "POST", data);
-                var responseInString = Encoding.UTF8.GetString(response);
+                NameValueCollection data = new NameValueCollection
+                {
+                    ["url"] = longUrl
+                };
+                byte[] response = wb.UploadValues("https://opizo.com/api/v1/shrink/", "POST", data);
+                string responseInString = Encoding.UTF8.GetString(response);
 
-                var root = JsonConvert.DeserializeObject<OpizoRootObject>(responseInString);
+                OpizoRootObject root = JsonConvert.DeserializeObject<OpizoRootObject>(responseInString);
 
                 if (root.status.Equals("success"))
+                {
                     link = root.data.url;
+                }
                 else
+                {
                     Console.WriteLine("something is wrong try again");
+                }
             }
 
             return link;
@@ -147,20 +161,26 @@ namespace UrlShortenerCrossPlatform
 
         public static string YonShorten(string longUrl, string customURL = "")
         {
-            var link = string.Empty;
-            using (var wb = new WebClient())
+            string link = string.Empty;
+            using (WebClient wb = new WebClient())
             {
-                var data = new NameValueCollection();
-                data["url"] = longUrl;
-                data["wish"] = customURL;
+                NameValueCollection data = new NameValueCollection
+                {
+                    ["url"] = longUrl,
+                    ["wish"] = customURL
+                };
 
-                var response = wb.UploadValues("http://api.yon.ir", "POST", data);
-                var responseInString = Encoding.UTF8.GetString(response);
-                var result = JsonConvert.DeserializeObject<Yon>(responseInString);
+                byte[] response = wb.UploadValues("http://api.yon.ir", "POST", data);
+                string responseInString = Encoding.UTF8.GetString(response);
+                Yon result = JsonConvert.DeserializeObject<Yon>(responseInString);
                 if (result.status)
+                {
                     link = "http://yon.ir/" + result.output;
+                }
                 else
+                {
                     Console.WriteLine("that custom URL is already taken");
+                }
             }
 
             return link;
@@ -243,7 +263,8 @@ namespace UrlShortenerCrossPlatform
                     return "Opizo";
             }
         }
-        static void Main(string[] args)
+
+        private static void Main(string[] args)
         {
             Console.Title = Assembly.GetExecutingAssembly().GetName().Name + " " + Assembly.GetExecutingAssembly().GetName().Version.ToString();
             Console.ForegroundColor = ConsoleColor.Cyan;
@@ -258,9 +279,8 @@ namespace UrlShortenerCrossPlatform
                     Console.WriteLine();
                     if (!string.IsNullOrEmpty(o.Link))
                     {
-                        
-                        Uri uriResult;
-                        var result = Uri.TryCreate(o.Link, UriKind.Absolute, out uriResult)
+
+                        bool result = Uri.TryCreate(o.Link, UriKind.Absolute, out Uri uriResult)
                                      && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
 
                         if (result)
@@ -271,9 +291,14 @@ namespace UrlShortenerCrossPlatform
                             {
                                 case 1:
                                     if (string.IsNullOrEmpty(o.Custom))
+                                    {
                                         currentLink = YonShorten(o.Link);
+                                    }
                                     else
+                                    {
                                         currentLink = YonShorten(o.Link, o.Custom);
+                                    }
+
                                     break;
 
                                 case 2:
@@ -290,9 +315,14 @@ namespace UrlShortenerCrossPlatform
 
                                 case 5:
                                     if (string.IsNullOrEmpty(o.Custom))
+                                    {
                                         currentLink = PlinkShorten(o.Link);
+                                    }
                                     else
+                                    {
                                         currentLink = PlinkShorten(o.Link, o.Custom);
+                                    }
+
                                     break;
                                 case 6:
                                     currentLink = Do0Shorten(o.Link);
@@ -328,6 +358,6 @@ namespace UrlShortenerCrossPlatform
                     }
                 });
         }
-        
+
     }
 }

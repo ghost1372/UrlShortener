@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace UrlShortenerCrossPlatform.ClipboardAPI
+﻿namespace UrlShortenerCrossPlatform.ClipboardAPI
 {
     public static class Clipboard
     {
