@@ -4,9 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="clr-namespace:HandyControl.Controls;assembly=HandyControl"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="clr-namespace:UrlShortener"
     xmlns:enum="clr-namespace:HandyControl.Data;assembly=HandyControl"
-    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
     xmlns:interactivity="clr-namespace:HandyControl.Interactivity;assembly=HandyControl"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Width="600"
@@ -312,13 +310,21 @@
                     Background="Transparent"
                     IsHitTestVisible="True" />
             </controls:ScrollViewer>
-            <controls:NotifyIcon Text="Url Shortener" IsBlink="{Binding ContextMenuIsBlink}" Visibility="{Binding ElementName=tgNotify, Path=IsChecked,Converter={StaticResource Boolean2VisibilityConverter}}">
+            <controls:NotifyIcon Name="notify" IsBlink="True" Text="Url Shortener">
                 <controls:NotifyIcon.ContextMenu>
                     <ContextMenu>
                         <MenuItem Command="interactivity:ControlCommands.PushMainWindow2Top" Header="Open Panel"/>
                         <MenuItem Command="interactivity:ControlCommands.ShutdownApp" Header="Exit"/>
                     </ContextMenu>
                 </controls:NotifyIcon.ContextMenu>
+                <interactivity:Interaction.Triggers>
+                    <interactivity:EventTrigger EventName="Click">
+                        <interactivity:EventToCommand Command="interactivity:ControlCommands.PushMainWindow2Top"/>
+                    </interactivity:EventTrigger>
+                    <interactivity:EventTrigger EventName="MouseDoubleClick">
+                        <interactivity:EventToCommand Command="{Binding MouseCmd}" CommandParameter="MouseDoubleClick"/>
+                    </interactivity:EventTrigger>
+                </interactivity:Interaction.Triggers>
             </controls:NotifyIcon>
         </Grid>
     </controls:TransitioningContentControl>

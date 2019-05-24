@@ -51,6 +51,7 @@ namespace UrlShortener
             {
             }
         }
+
         private void ToggleButton_Checked(object sender, RoutedEventArgs e)
         {
             Topmost = tgTop.IsChecked.Value;
@@ -604,20 +605,39 @@ namespace UrlShortener
                 ((App)Application.Current).UpdateSkin(tag);
             }
         }
+
         protected override void OnClosing(CancelEventArgs e)
         {
             if (GlobalData.Config.NotifyIconIsShow)
             {
-                HandyControl.Controls.MessageBox.Show(new MessageBoxInfo
+                if (GlobalData.Config.FirstRun)
                 {
-                    MessageBoxText = "The tray icon is open and will hide the window instead of closing the program",
-                    Caption = "Url Shotener",
-                    IconBrushKey = ResourceToken.AccentBrush,
-                    IconKey = ResourceToken.InfoGeometry,
-                    Style = ResourceHelper.GetResource<Style>("MessageBoxCustom")
-                });
-                Hide();
-                e.Cancel = true;
+                    MessageBoxResult result = HandyControl.Controls.MessageBox.Show(new MessageBoxInfo
+                    {
+                        MessageBoxText = "The tray icon is open and will hide the window instead of closing the program, do you want?",
+                        Caption = "Url Shotener",
+                        Button = MessageBoxButton.YesNo,
+                        IconBrushKey = ResourceToken.AccentBrush,
+                        IconKey = ResourceToken.InfoGeometry,
+                        Style = ResourceHelper.GetResource<Style>("MessageBoxCustom")
+                    });
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        Hide();
+                        e.Cancel = true;
+                        GlobalData.Config.FirstRun = false;
+                        GlobalData.Save();
+                    }
+                    else
+                    {
+                        base.OnClosing(e);
+                    }
+                }
+                else
+                {
+                    Hide();
+                    e.Cancel = true;
+                }
             }
             else
             {
@@ -627,6 +647,15 @@ namespace UrlShortener
 
         private void TgNotify_Checked(object sender, RoutedEventArgs e)
         {
+            if (tgNotify.IsChecked.Value)
+            {
+                notify.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                notify.Visibility = Visibility.Hidden;
+            }
+
             GlobalData.Config.NotifyIconIsShow = tgNotify.IsChecked.Value;
             GlobalData.Save();
         }
