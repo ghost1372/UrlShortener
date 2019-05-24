@@ -5,6 +5,7 @@
 A simple program to shorten links
 
 ![](https://file.soft98.ir/uploads/mahdi72/2018/10/26_10-zxc.png)
+![](https://file.soft98.ir/uploads/mahdi72/2018/11/28_11-Untitled.png)
 
 
 ## If you know the other shortening service that supports API, let us know!
@@ -26,7 +27,8 @@ unzip binary and go to directoy then execute following command:
 -s is optional argument that is a integer for selecting service (you can find services in help menu)<br>
 -l is required argument that is long url you want to shot it.
 ```
-./UrlShortenerCrossPlatform.dll -s 3 -l https://github.com/ghost1372
+chmod 777 ./UrlShortenerCrossPlatform
+./UrlShortenerCrossPlatform -s 3 -l https://github.com/ghost1372
 ```
 ## Compile Project on Linux or Mac
 First Step: you must install prerequisites library<br>

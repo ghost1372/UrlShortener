@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <UrlShorter>
   <AppVersion>
-    <version>2.0.0</version>
+    <version>2.0.1</version>
     <url>https://github.com/ghost1372/UrlShortener/releases/latest</url>
     <changelog>
-add Do0 Api
-UI Improvment (now you can search api in combobox)
-updated net framwork to 4.6.2
+Downgraded net framwork to 4.5
     </changelog>
   </AppVersion>
 </UrlShorter>
