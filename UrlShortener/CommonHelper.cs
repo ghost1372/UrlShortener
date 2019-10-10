@@ -1,5 +1,4 @@
-﻿#if !Core
-using HandyControl.Data;
+﻿using HandyControl.Data;
 using System.Linq;
 using System.Management;
 
@@ -24,4 +23,3 @@ namespace UrlShortener
         }
     }
 }
-#endif
