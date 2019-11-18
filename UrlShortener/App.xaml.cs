@@ -1,4 +1,5 @@
-﻿using HandyControl.Data;
+﻿using HandyControl.Controls;
+using HandyControl.Data;
 using HandyControl.Tools;
 using System;
 using System.Windows;
@@ -12,16 +13,30 @@ namespace UrlShortener
     {
         protected override void OnStartup(StartupEventArgs e)
         {
-            GlobalData.Init();
-
-            if (GlobalData.Config.Skin != SkinType.Default)
+            if (checkSkinType(InIHelper.ReadValue("Skin")) != SkinType.Default)
             {
-                UpdateSkin(GlobalData.Config.Skin);
+                UpdateSkin(checkSkinType(InIHelper.ReadValue("Skin")));
             }
+
+            var lang = InIHelper.ReadValue("Lang");
+            if (string.IsNullOrEmpty(lang))
+                ConfigHelper.Instance.SetLang("fa");
+            else
+                ConfigHelper.Instance.SetLang(lang);
 
             ConfigHelper.Instance.SetSystemVersionInfo(CommonHelper.GetSystemVersionInfo());
 
             base.OnStartup(e);
+        }
+
+        internal SkinType checkSkinType(string input)
+        {
+            if (input.Equals("Default"))
+                return SkinType.Default;
+            else if (input.Equals("Violet"))
+                return SkinType.Violet;
+            else
+                return SkinType.Dark;
         }
 
         internal void UpdateSkin(SkinType skin)

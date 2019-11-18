@@ -7,6 +7,7 @@
     xmlns:enum="clr-namespace:HandyControl.Data;assembly=HandyControl"
     xmlns:interactivity="clr-namespace:HandyControl.Interactivity;assembly=HandyControl"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:lang="clr-namespace:UrlShortener.Properties.Langs"
     Width="600"
     Height="220"
     NonClientAreaBackground="#3c3c3c"
@@ -63,12 +64,12 @@
                     <MenuItem
                         Click="MenuItem_Click"
                         Foreground="WhiteSmoke"
-                        Header="Update"
+                        Header="{x:Static lang:Lang.Update}"
                         Tag="Update" />
                     <MenuItem
                         Click="MenuItem_Click"
                         Foreground="WhiteSmoke"
-                        Header="About"
+                        Header="{x:Static lang:Lang.About}"
                         Tag="About" />
                 </Menu>
             </StackPanel>
@@ -76,30 +77,42 @@
 
             <Popup StaysOpen="False" AllowsTransparency="True" Grid.Column="1" PlacementTarget="{Binding ElementName=ButtonConfig}" x:Name="popupConfig">
                 <Border Background="{DynamicResource SecondaryRegionBrush}" CornerRadius="4" Margin="16" Effect="{StaticResource EffectShadow2}">
-                    <StackPanel Button.Click="StackPanel_Click" Margin="10">
-                        <Button Tag="{x:Static enum:SkinType.Default}" Style="{StaticResource ButtonCustom}">
-                            <Border Background="White" Width="32" Height="21" CornerRadius="2" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}"/>
-                        </Button>
-                        <Button Tag="{x:Static enum:SkinType.Dark}" Style="{StaticResource ButtonCustom}">
-                            <Border Background="Black" Width="32" Height="21" CornerRadius="2" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}"/>
-                        </Button>
-                        <Button Tag="{x:Static enum:SkinType.Violet}" Style="{StaticResource ButtonCustom}">
-                            <Border Background="Purple" Width="32" Height="21" CornerRadius="2" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}"/>
-                        </Button>
-                        <StackPanel
+                    <StackPanel Orientation="Horizontal">
+                        <StackPanel Button.Click="ButtonLangs_OnClick" Margin="10,5,0,10">
+                            <Button Tag="en" Style="{StaticResource ButtonCustom}" Margin="0,10,0,0">
+                                <Image Width="32" Source="/UrlShortener;component/Resources/Img/Flag/en.png"/>
+                            </Button>
+                            <Button Tag="fa" Style="{StaticResource ButtonCustom}" Margin="0,10,0,0">
+                                <Image Width="32" Source="/UrlShortener;component/Resources/Img/Flag/fa.png"/>
+                            </Button>
+                        </StackPanel>
+                        <StackPanel Button.Click="StackPanel_Click" Margin="10">
+                            <Button Tag="{x:Static enum:SkinType.Default}" Style="{StaticResource ButtonCustom}">
+                                <Border Background="White" Width="32" Height="21" CornerRadius="2" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}"/>
+                            </Button>
+                            <Button Tag="{x:Static enum:SkinType.Dark}" Style="{StaticResource ButtonCustom}">
+                                <Border Background="Black" Width="32" Height="21" CornerRadius="2" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}"/>
+                            </Button>
+                            <Button Tag="{x:Static enum:SkinType.Violet}" Style="{StaticResource ButtonCustom}">
+                                <Border Background="Purple" Width="32" Height="21" CornerRadius="2" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}"/>
+                            </Button>
+                            <StackPanel
+                                HorizontalAlignment="Right"
                          Orientation="Horizontal">
-                            <TextBlock Margin="10" Foreground="Black" Text="Top Most" />
-                            <ToggleButton Name="tgTop" Checked="ToggleButton_Checked"
+                                <TextBlock Margin="10" Foreground="{DynamicResource PrimaryTextBrush}" Text="{x:Static lang:Lang.TopMost}" />
+                                <ToggleButton Name="tgTop" Checked="ToggleButton_Checked"
                                           Style="{StaticResource ToggleButtonSwitch}"
                                           Unchecked="ToggleButton_Checked" />
-                        </StackPanel>
-                        <StackPanel
+                            </StackPanel>
+                            <StackPanel
                          Orientation="Horizontal">
-                            <TextBlock Margin="10" Foreground="Black" Text="Hide To NotifyIcon" />
-                            <ToggleButton Name="tgNotify" Checked="TgNotify_Checked"
+                                <TextBlock Margin="10" Foreground="{DynamicResource PrimaryTextBrush}" Text="{x:Static lang:Lang.HideToNotify}" />
+                                <ToggleButton Name="tgNotify" Checked="TgNotify_Checked"
                                           Style="{StaticResource ToggleButtonSwitch}"
                                           Unchecked="TgNotify_Checked" />
+                            </StackPanel>
                         </StackPanel>
+
                     </StackPanel>
                 </Border>
             </Popup>
@@ -110,7 +123,7 @@
     <controls:TransitioningContentControl>
         <Grid>
             <TabControl Background="Transparent" Name="tabc">
-                <TabItem Background="Transparent" Header="Home">
+                <TabItem Background="Transparent" Header="{x:Static lang:Lang.Tab_Home}">
                     <StackPanel
                         MaxWidth="800"
                         Margin="10,10,10,0"
@@ -122,7 +135,7 @@
                             IsEditable="True"
                             Margin="0,0,0,10"
                             HorizontalAlignment="Left"
-                            controls:InfoElement.Placeholder="Select Url Shortener Service"
+                            controls:InfoElement.Placeholder="{x:Static lang:Lang.CmbService}"
                             SelectionChanged="cmbService_SelectionChanged"
                             Style="{StaticResource ComboBoxExtend}">
                             <ComboBoxItem Content="Yon" />
@@ -137,7 +150,7 @@
                                 Background="Transparent"
                                 controls:InfoElement.ContentHeight="35"
                                 controls:InfoElement.Necessary="True"
-                                controls:InfoElement.Placeholder="Type Url Here..."
+                                controls:InfoElement.Placeholder="{x:Static lang:Lang.TxtUrl}"
                                 TextChanged="txtUrl_TextChanged">
                                 <TextBox.Style>
                                     <Style BasedOn="{StaticResource TextBoxExtend}" TargetType="TextBox">
@@ -160,7 +173,7 @@
                                 Width="140"
                                 Margin="10,0,5,0"
                                 controls:InfoElement.ContentHeight="35"
-                                controls:InfoElement.Placeholder="Custom Url [Optional]"
+                                controls:InfoElement.Placeholder="{x:Static lang:Lang.CustomUrl}"
                                 MaxLength="10">
                                 <TextBox.Style>
                                     <Style BasedOn="{StaticResource TextBoxExtend}" TargetType="TextBox">
@@ -178,10 +191,10 @@
                             </TextBox>
                             <Button
                                 Name="btn"
-                                Width="140"
+                                Width="135"
                                 Margin="5,0,0,0"
                                 Click="Button_Click"
-                                Content="Short it!"
+                                Content="{x:Static lang:Lang.BtnGet}"
                                 IsDefault="True"
                                 IsEnabled="False"
                                 Style="{StaticResource ButtonPrimary}" />
@@ -197,7 +210,7 @@
                                 <TextBlock
                                     Foreground="{StaticResource DarkSuccessBrush}"
                                     Style="{StaticResource TextBlockTitle}"
-                                    Text="Copied" />
+                                    Text="{x:Static lang:Lang.Status}" />
 
                                 <Rectangle
                                     Width="200"
@@ -210,7 +223,7 @@
                         </StackPanel>
                     </StackPanel>
                 </TabItem>
-                <TabItem Background="Transparent" Header="List">
+                <TabItem Background="Transparent" Header="{x:Static lang:Lang.Tab_List}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -223,7 +236,7 @@
                                 Width="130"
                                 Margin="10"
                                 Click="btnLoad_Click"
-                                Content="Load Text File"
+                                Content="{x:Static lang:Lang.BtnLoad}"
                                 Style="{StaticResource ButtonPrimary}" />
                                 <Button Click="Button_Help" controls:IconElement.Geometry="{DynamicResource AskGeometry}" Style="{DynamicResource ButtonPrimary}"/>
                             </StackPanel>
@@ -232,7 +245,7 @@
                                  Background="Transparent"
                                 Margin="10,0,10,0"
                                 IsEditable="True"
-                                controls:InfoElement.Placeholder="Select Url Shortener Service"
+                                controls:InfoElement.Placeholder="{x:Static lang:Lang.CmbService}"
                                 Style="{StaticResource ComboBoxExtend}">
                                 <ComboBoxItem Content="Yon" />
                                 <ComboBoxItem Content="Opizo" />
@@ -251,7 +264,7 @@
                                 Width="140"
                                 Margin="10"
                                 Click="btnStart_Click"
-                                Content="Start">
+                                Content="{x:Static lang:Lang.BtnStart}">
                                 <Button.Style>
                                     <Style BasedOn="{StaticResource ButtonPrimary}" TargetType="Button">
                                         <Setter Property="IsEnabled" Value="True" />
@@ -290,31 +303,18 @@
                                     Width="1*"
                                     MinWidth="200"
                                     Binding="{Binding Link}"
-                                    Header="Link" />
+                                    Header="{x:Static lang:Lang.Link}" />
                             </DataGrid.Columns>
                         </DataGrid>
                     </Grid>
                 </TabItem>
 
             </TabControl>
-            <controls:ScrollViewer
-                Grid.Column="0"
-                HorizontalAlignment="Right"
-                IsEnableInertia="True"
-                IsPenetrating="True"
-                VerticalScrollBarVisibility="Hidden">
-                <StackPanel
-                    Margin="0,10,10,10"
-                    controls:Growl.GrowlParent="True"
-                    VerticalAlignment="Top"
-                    Background="Transparent"
-                    IsHitTestVisible="True" />
-            </controls:ScrollViewer>
             <controls:NotifyIcon Name="notify" IsBlink="True" Text="Url Shortener">
                 <controls:NotifyIcon.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Command="interactivity:ControlCommands.PushMainWindow2Top" Header="Open Panel"/>
-                        <MenuItem Command="interactivity:ControlCommands.ShutdownApp" Header="Exit"/>
+                        <MenuItem Command="interactivity:ControlCommands.PushMainWindow2Top" Header="{x:Static lang:Lang.OpenPanel}"/>
+                        <MenuItem Command="interactivity:ControlCommands.ShutdownApp" Header="{x:Static lang:Lang.Exit}"/>
                     </ContextMenu>
                 </controls:NotifyIcon.ContextMenu>
                 <interactivity:Interaction.Triggers>

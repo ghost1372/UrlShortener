@@ -1,6 +1,5 @@
 ﻿using HandyControl.Controls;
 using HandyControl.Data;
-using HandyControl.Tools;
 using Microsoft.CSharp.RuntimeBinder;
 using Microsoft.Win32;
 using Newtonsoft.Json;
@@ -21,7 +20,6 @@ using System.Web.Script.Serialization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
-using System.Xml.Linq;
 
 namespace UrlShortener
 {
@@ -30,60 +28,18 @@ namespace UrlShortener
     /// </summary>
     public partial class MainWindow : BlurWindow
     {
+        const string TopMost = nameof(TopMost);
+        const string FirstRun = nameof(FirstRun);
+        const string NotifyIconIsShow = nameof(NotifyIconIsShow);
+        const string ServiceIndex = nameof(ServiceIndex);
+        const string Skin = nameof(Skin);
+        const string Lang = nameof(Lang);
+
+        public static string getAppVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+
         private static readonly HttpClient client = new HttpClient();
 
         private readonly List<ShorterList> shorterList = new List<ShorterList>();
-
-        public MainWindow()
-        {
-            InitializeComponent();
-
-            //get default values
-            try
-            {
-                cmbListService.SelectedIndex = cmbService.SelectedIndex = GlobalData.Config.ServiceIndex;
-                tgTop.IsChecked = Topmost = GlobalData.Config.TopMost;
-                tgNotify.IsChecked = GlobalData.Config.NotifyIconIsShow;
-
-                Title = "Url Shortener " + getAppVersion;
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        private void ToggleButton_Checked(object sender, RoutedEventArgs e)
-        {
-            Topmost = tgTop.IsChecked.Value;
-            GlobalData.Config.TopMost = tgTop.IsChecked.Value;
-            GlobalData.Save();
-        }
-
-        private void MenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            MenuItem tag = sender as MenuItem;
-            switch (tag.Tag)
-            {
-                case "Update":
-                    CheckUpdate();
-                    break;
-
-                case "About":
-                    Growl.Info(new GrowlInfo
-                    { Message = "Coded by Mahdi Hosseini\n Contact: mahdidvb72@gmail.com", ShowDateTime = false });
-                    break;
-            }
-        }
-
-        private void Button_Help(object sender, RoutedEventArgs e)
-        {
-            Growl.Info(new GrowlInfo
-            {
-                Message =
-                    "Step 1: Create Txt File like this(each line one Link):\n http://Test.com\nhttp://Test.com\nStep 2: Load txt File\nStep 3: Choose Url Shorten Service\nStep 4: Select urls\nStep 5: Click Start",
-                ShowDateTime = false
-            });
-        }
 
         #region API Key
 
@@ -96,24 +52,23 @@ namespace UrlShortener
 
         #endregion
 
-        #region Update Variable
+        public MainWindow()
+        {
+            InitializeComponent();
 
-        private string newVersion = string.Empty;
+            //get default values
+            try
+            {
+                cmbListService.SelectedIndex = cmbService.SelectedIndex = Convert.ToInt32(InIHelper.ReadValue(ServiceIndex));
+                tgTop.IsChecked = Topmost = Convert.ToBoolean(InIHelper.ReadValue(TopMost));
+                tgNotify.IsChecked = Convert.ToBoolean(InIHelper.ReadValue(NotifyIconIsShow));
 
-        private string ChangeLog = string.Empty;
-        private string url = "";
-
-        public static string UpdateServer =
-            "https://raw.githubusercontent.com/ghost1372/UrlShortener/master/Updater.xml";
-
-        public const string UpdateXmlTag = "UrlShorter"; //Defined in Xml file
-        public const string UpdateXmlChildTag = "AppVersion"; //Defined in Xml file
-        public const string UpdateVersionTag = "version"; //Defined in Xml file
-        public const string UpdateUrlTag = "url"; //Defined in Xml file
-        public const string UpdateChangeLogTag = "changelog";
-        public static string getAppVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-
-        #endregion
+                Title = "Url Shortener " + getAppVersion;
+            }
+            catch (Exception)
+            {
+            }
+        }
 
         #region Shorten Services
 
@@ -143,14 +98,14 @@ namespace UrlShortener
                 {
                     StreamReader reader = new StreamReader(responseStream, Encoding.GetEncoding("utf-8"));
                     string errorText = reader.ReadToEnd();
-                    Growl.Error(errorText);
+                    Growl.ErrorGlobal(errorText);
                 }
 
                 throw;
             }
             catch (RuntimeBinderException ex)
             {
-                Growl.Error(ex.Message);
+                Growl.ErrorGlobal(ex.Message);
                 return "";
             }
         }
@@ -158,22 +113,30 @@ namespace UrlShortener
         public string PlinkShorten(string longUrl, string customURL = "")
         {
             string link = string.Empty;
-            using (WebClient wb = new WebClient())
+            try
             {
-                UTF8Encoding utf8 = new UTF8Encoding();
-                string utf8Encoded = HttpUtility.UrlEncode(longUrl, utf8);
+                using (WebClient wb = new WebClient())
+                {
+                    UTF8Encoding utf8 = new UTF8Encoding();
+                    string utf8Encoded = HttpUtility.UrlEncode(longUrl, utf8);
 
-                string response = wb.DownloadString("https://plink.ir/api?api=" + PlinkApiKey + "& url=" + utf8Encoded +
-                                                 "&custom=" + customURL);
-                PlinkData root = JsonConvert.DeserializeObject<PlinkData>(response);
-                if (root.error.Contains("0"))
-                {
-                    link = root.@short;
+                    string response = wb.DownloadString("https://plink.ir/api?api=" + PlinkApiKey + "& url=" + utf8Encoded +
+                                                     "&custom=" + customURL);
+                    PlinkData root = JsonConvert.DeserializeObject<PlinkData>(response);
+                    if (root.error.Contains("0"))
+                    {
+                        link = root.@short;
+                    }
+                    else
+                    {
+                        Growl.ErrorGlobal(root.msg);
+                    }
                 }
-                else
-                {
-                    Growl.Error(root.msg);
-                }
+            }
+            catch (Exception ex)
+            {
+
+                Growl.ErrorGlobal(ex.Message);
             }
 
             return link;
@@ -184,26 +147,34 @@ namespace UrlShortener
         {
             string link = string.Empty;
 
-            Dictionary<string, string> values = new Dictionary<string, string>
+            try
+            {
+                Dictionary<string, string> values = new Dictionary<string, string>
                 {
                    { "link", longUrl }
                 };
 
-            FormUrlEncodedContent content = new FormUrlEncodedContent(values);
+                FormUrlEncodedContent content = new FormUrlEncodedContent(values);
 
-            HttpResponseMessage response = await client.PostAsync("https://do0.ir/post/SJAj4Ik6Q9Rd/2.5", content);
+                HttpResponseMessage response = await client.PostAsync("https://do0.ir/post/SJAj4Ik6Q9Rd/2.5", content);
 
-            string responseString = await response.Content.ReadAsStringAsync();
-            Do0Data root = JsonConvert.DeserializeObject<Do0Data>(responseString);
-            if (root.success)
-            {
-                link = "https://do0.ir/" + root.@short;
+                string responseString = await response.Content.ReadAsStringAsync();
+                Do0Data root = JsonConvert.DeserializeObject<Do0Data>(responseString);
+                if (root.success)
+                {
+                    link = "https://do0.ir/" + root.@short;
+                }
+                else
+                {
+                    Growl.ErrorGlobal(root.error);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                Growl.Error(root.error);
-            }
 
+                Growl.ErrorGlobal(ex.Message);
+            }
+            
             return link;
         }
 
@@ -211,26 +182,34 @@ namespace UrlShortener
         {
             string link = string.Empty;
 
-            using (WebClient wb = new WebClient())
+            try
             {
-                wb.Headers.Add("X-API-KEY", OpizoApiKey);
-                NameValueCollection data = new NameValueCollection
+                using (WebClient wb = new WebClient())
                 {
-                    ["url"] = longUrl
-                };
-                byte[] response = wb.UploadValues("https://opizo.com/api/v1/shrink/", "POST", data);
-                string responseInString = Encoding.UTF8.GetString(response);
+                    wb.Headers.Add("X-API-KEY", OpizoApiKey);
+                    NameValueCollection data = new NameValueCollection
+                    {
+                        ["url"] = longUrl
+                    };
+                    byte[] response = wb.UploadValues("https://opizo.com/api/v1/shrink/", "POST", data);
+                    string responseInString = Encoding.UTF8.GetString(response);
 
-                OpizoRootObject root = JsonConvert.DeserializeObject<OpizoRootObject>(responseInString);
+                    OpizoRootObject root = JsonConvert.DeserializeObject<OpizoRootObject>(responseInString);
 
-                if (root.status.Equals("success"))
-                {
-                    link = root.data.url;
+                    if (root.status.Equals("success"))
+                    {
+                        link = root.data.url;
+                    }
+                    else
+                    {
+                        Growl.ErrorGlobal(Properties.Langs.Lang.OpizoError);
+                    }
                 }
-                else
-                {
-                    Growl.Error("something is wrong try again");
-                }
+            }
+            catch (Exception ex)
+            {
+
+                Growl.ErrorGlobal(ex.Message);
             }
 
             return link;
@@ -239,25 +218,33 @@ namespace UrlShortener
         public string YonShorten(string longUrl, string customURL = "")
         {
             string link = string.Empty;
-            using (WebClient wb = new WebClient())
+            try
             {
-                NameValueCollection data = new NameValueCollection
+                using (WebClient wb = new WebClient())
                 {
-                    ["url"] = longUrl,
-                    ["wish"] = customURL
-                };
+                    NameValueCollection data = new NameValueCollection
+                    {
+                        ["url"] = longUrl,
+                        ["wish"] = customURL
+                    };
 
-                byte[] response = wb.UploadValues("http://api.yon.ir", "POST", data);
-                string responseInString = Encoding.UTF8.GetString(response);
-                Yon result = JsonConvert.DeserializeObject<Yon>(responseInString);
-                if (result.status)
-                {
-                    link = "http://yon.ir/" + result.output;
+                    byte[] response = wb.UploadValues("http://api.yon.ir", "POST", data);
+                    string responseInString = Encoding.UTF8.GetString(response);
+                    Yon result = JsonConvert.DeserializeObject<Yon>(responseInString);
+                    if (result.status)
+                    {
+                        link = "http://yon.ir/" + result.output;
+                    }
+                    else
+                    {
+                        Growl.ErrorGlobal(Properties.Langs.Lang.CustomUrlError);
+                    }
                 }
-                else
-                {
-                    Growl.Error("that custom URL is already taken");
-                }
+            }
+            catch (Exception ex)
+            {
+
+               Growl.ErrorGlobal(ex.Message);
             }
 
             return link;
@@ -386,13 +373,21 @@ namespace UrlShortener
 
         private void cmbService_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            GlobalData.Config.ServiceIndex = cmbService.SelectedIndex;
-            GlobalData.Save();
+            InIHelper.AddValue(ServiceIndex, cmbService.SelectedIndex.ToString());
         }
 
         #endregion
 
         #region Group Link Shorten
+        private void Button_Help(object sender, RoutedEventArgs e)
+        {
+            Growl.InfoGlobal(new GrowlInfo
+            {
+                Message =
+                    Properties.Langs.Lang.Help,
+                ShowDateTime = false
+            });
+        }
 
         private void btnLoad_Click(object sender, RoutedEventArgs e)
         {
@@ -477,114 +472,41 @@ namespace UrlShortener
         {
             try
             {
-                newVersion = string.Empty;
-                ChangeLog = string.Empty;
-                url = "";
+                var checkUpdate = UpdateHelper.CheckForUpdateGithubRelease("ghost1372", "UrlShortener");
 
-                XDocument doc = XDocument.Load(UpdateServer);
-                IEnumerable<XElement> items = doc
-                    .Element(XName.Get(UpdateXmlTag))
-                    .Elements(XName.Get(UpdateXmlChildTag));
-                IEnumerable<string> versionItem = items.Select(ele => ele.Element(XName.Get(UpdateVersionTag)).Value);
-                IEnumerable<string> urlItem = items.Select(ele => ele.Element(XName.Get(UpdateUrlTag)).Value);
-                IEnumerable<string> changelogItem = items.Select(ele => ele.Element(XName.Get(UpdateChangeLogTag)).Value);
-
-                newVersion = versionItem.FirstOrDefault();
-                url = urlItem.FirstOrDefault();
-                ChangeLog = changelogItem.FirstOrDefault();
-                CompareVersions();
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        private void CompareVersions()
-        {
-            if (IsVersionLater(newVersion, getAppVersion))
-            {
-                Growl.Info(new GrowlInfo
+                if (checkUpdate.IsExistNewVersion)
                 {
-                    Message = $"A new version {newVersion} has been detected!Do you want to update?",
-                    ShowDateTime = false,
-                    ActionBeforeClose = isConfirm =>
+                    Growl.InfoGlobal(new GrowlInfo
                     {
-                        if (isConfirm)
+                        Message = string.Format(Properties.Langs.Lang.UpdateMessage, checkUpdate.Version),
+                        ShowDateTime = false,
+                        ActionBeforeClose = isConfirm =>
                         {
-                            Process.Start(url);
-                        }
+                            if (isConfirm)
+                            {
+                                Process.Start(checkUpdate.Url);
+                            }
 
-                        return true;
-                    },
-                    CancelStr = "Cancel",
-                    ConfirmStr = "Confirm"
-                });
-                Growl.Info(ChangeLog);
+                            return true;
+                        },
+                    });
+                    Growl.InfoGlobal(checkUpdate.Changelog);
+                }
+                else
+                {
+                    Growl.ErrorGlobal(string.Format(Properties.Langs.Lang.Update, getAppVersion));
+                }
             }
-            else
+            catch (Exception ex)
             {
-                Growl.Error($"You are using latest version {getAppVersion}");
+                Growl.ErrorGlobal(ex.Message);
+                
             }
-        }
-
-        public static bool IsVersionLater(string newVersion, string oldVersion)
-        {
-            // split into groups
-            string[] cur = newVersion.Split('.');
-            string[] cmp = oldVersion.Split('.');
-            // get max length and fill the shorter one with zeros
-            int len = Math.Max(cur.Length, cmp.Length);
-            int[] vs = new int[len];
-            int[] cs = new int[len];
-            Array.Clear(vs, 0, len);
-            Array.Clear(cs, 0, len);
-            int idx = 0;
-            // skip non digits
-            foreach (string n in cur)
-            {
-                if (!int.TryParse(n, out vs[idx]))
-                {
-                    vs[idx] = -999; // mark for skip later
-                }
-
-                idx++;
-            }
-
-            idx = 0;
-            foreach (string n in cmp)
-            {
-                if (!int.TryParse(n, out cs[idx]))
-                {
-                    cs[idx] = -999; // mark for skip later
-                }
-
-                idx++;
-            }
-
-            for (int i = 0; i < len; i++)
-            {
-                // skip non digits
-                if (vs[i] == -999 || cs[i] == -999)
-                {
-                    continue;
-                }
-
-                if (vs[i] < cs[i])
-                {
-                    return false;
-                }
-
-                if (vs[i] > cs[i])
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         #endregion
 
+        #region Notify & Config Button
         private void ButtonConfig_Click(object sender, RoutedEventArgs e)
         {
             popupConfig.IsOpen = true;
@@ -595,38 +517,55 @@ namespace UrlShortener
             if (e.OriginalSource is Button button && button.Tag is SkinType tag)
             {
                 popupConfig.IsOpen = false;
-                if (tag.Equals(GlobalData.Config.Skin))
+                if (tag.Equals(((App)Application.Current).checkSkinType(InIHelper.ReadValue(Skin))))
                 {
                     return;
                 }
 
-                GlobalData.Config.Skin = tag;
-                GlobalData.Save();
+                InIHelper.AddValue(Skin,tag.ToString());
                 ((App)Application.Current).UpdateSkin(tag);
+            }
+        }
+
+        private void ButtonLangs_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (e.OriginalSource is Button button && button.Tag is string tag)
+            {
+                popupConfig.IsOpen = false;
+                if (tag.Equals(InIHelper.ReadValue(Lang))) return;
+                Growl.AskGlobal(Properties.Langs.Lang.ChangeLangAsk, b =>
+                {
+                    if (!b) return true;
+                    InIHelper.AddValue(Lang, tag);
+                    var processModule = Process.GetCurrentProcess().MainModule;
+                    if (processModule != null)
+                        Process.Start(processModule.FileName);
+                    Application.Current.Shutdown();
+                    return true;
+                });
             }
         }
 
         protected override void OnClosing(CancelEventArgs e)
         {
-            if (GlobalData.Config.NotifyIconIsShow)
+            if (!InIHelper.ReadValue(NotifyIconIsShow).Equals("False"))
             {
-                if (GlobalData.Config.FirstRun)
+                if (!InIHelper.ReadValue(FirstRun).Equals("False"))
                 {
                     MessageBoxResult result = HandyControl.Controls.MessageBox.Show(new MessageBoxInfo
                     {
-                        MessageBoxText = "The tray icon is open and will hide the window instead of closing the program, do you want?",
+                        Message = Properties.Langs.Lang.OnClosingMessage,
                         Caption = "Url Shotener",
                         Button = MessageBoxButton.YesNo,
                         IconBrushKey = ResourceToken.AccentBrush,
                         IconKey = ResourceToken.InfoGeometry,
-                        Style = ResourceHelper.GetResource<Style>("MessageBoxCustom")
+                        StyleKey = "MessageBoxCustom"
                     });
                     if (result == MessageBoxResult.Yes)
                     {
                         Hide();
                         e.Cancel = true;
-                        GlobalData.Config.FirstRun = false;
-                        GlobalData.Save();
+                        InIHelper.AddValue(FirstRun,"False");
                     }
                     else
                     {
@@ -656,8 +595,31 @@ namespace UrlShortener
                 notify.Visibility = Visibility.Hidden;
             }
 
-            GlobalData.Config.NotifyIconIsShow = tgNotify.IsChecked.Value;
-            GlobalData.Save();
+            InIHelper.AddValue(NotifyIconIsShow, tgNotify.IsChecked.Value.ToString());
         }
+
+        private void ToggleButton_Checked(object sender, RoutedEventArgs e)
+        {
+            Topmost = tgTop.IsChecked.Value;
+            InIHelper.AddValue(TopMost, tgTop.IsChecked.Value.ToString());
+        }
+
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            MenuItem tag = sender as MenuItem;
+            switch (tag.Tag)
+            {
+                case "Update":
+                    CheckUpdate();
+                    break;
+
+                case "About":
+                    Growl.InfoGlobal(new GrowlInfo
+                    { Message = Properties.Langs.Lang.AboutContent, ShowDateTime = false });
+                    break;
+            }
+        }
+
+        #endregion
     }
 }
