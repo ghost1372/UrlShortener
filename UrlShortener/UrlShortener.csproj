@@ -129,5 +129,13 @@
     <Resource Include="Resources\Img\Flag\en.png" />
     <Resource Include="Resources\Img\Flag\fa.png" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="HandyControls">
+      <Version>2.4.3</Version>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json">
+      <Version>12.0.3</Version>
+    </PackageReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
