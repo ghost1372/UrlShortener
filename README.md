@@ -1,4 +1,5 @@
 [![Total downloads](https://img.shields.io/github/downloads/ghost1372/UrlShortener/total.svg)](https://github.com/ghost1372/UrlShortener/releases)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/ghost1372/UrlShortener?color=green)
 
 # Url Shortener
 A simple program to shorten links
