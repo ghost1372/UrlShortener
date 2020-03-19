@@ -1,56 +1,47 @@
-﻿using HandyControl.Controls;
-using HandyControl.Data;
-using HandyControl.Tools;
+﻿using HandyControl.Data;
+using Prism.Ioc;
 using System;
 using System.Windows;
-
+using UrlShortener.Views;
 namespace UrlShortener
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
-    public partial class App : Application
+    public partial class App
     {
-        protected override void OnStartup(StartupEventArgs e)
+        protected override Window CreateShell()
         {
-            if (checkSkinType(InIHelper.ReadValue("Skin")) != SkinType.Default)
-            {
-                UpdateSkin(checkSkinType(InIHelper.ReadValue("Skin")));
-            }
-
-            var lang = InIHelper.ReadValue("Lang");
-            if (string.IsNullOrEmpty(lang))
-                ConfigHelper.Instance.SetLang("fa");
-            else
-                ConfigHelper.Instance.SetLang(lang);
-
-            ConfigHelper.Instance.SetSystemVersionInfo(CommonHelper.GetSystemVersionInfo());
-
-            base.OnStartup(e);
+            return Container.Resolve<MainWindow>();
         }
 
-        internal SkinType checkSkinType(string input)
+        protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            if (input.Equals("Default"))
-                return SkinType.Default;
-            else if (input.Equals("Violet"))
-                return SkinType.Violet;
-            else
-                return SkinType.Dark;
+            containerRegistry.RegisterForNavigation<MainShortener>();
+            containerRegistry.RegisterForNavigation<MainContent>();
+            containerRegistry.RegisterForNavigation<LeftMainContent>();
+            containerRegistry.RegisterForNavigation<About>();
+            containerRegistry.RegisterForNavigation<Settings>();
+            containerRegistry.RegisterForNavigation<Update>();
         }
-
         internal void UpdateSkin(SkinType skin)
         {
-            Resources.MergedDictionaries.Clear();
             Resources.MergedDictionaries.Add(new ResourceDictionary
             {
-                Source = new Uri($"pack://application:,,,/HandyControl;component/Themes/Skin{skin.ToString()}.xaml")
+                Source = new Uri($"pack://application:,,,/HandyControl;component/Themes/Skin{skin}.xaml")
             });
             Resources.MergedDictionaries.Add(new ResourceDictionary
             {
                 Source = new Uri("pack://application:,,,/HandyControl;component/Themes/Theme.xaml")
             });
-            Current.MainWindow?.OnApplyTemplate();
+        }
+
+        public override void Initialize()
+        {
+            base.Initialize();
+            GlobalData.Init();
+
+            if (GlobalData.Config.Skin != SkinType.Default)
+            {
+                UpdateSkin(GlobalData.Config.Skin);
+            }
         }
     }
 }
