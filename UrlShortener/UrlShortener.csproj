@@ -8,8 +8,8 @@
     <Version>1.0.0.0</Version>
     <Configurations>Debug;Release</Configurations>
     <Copyright>Copyright © Mahdi 2018-2020</Copyright>
-    <FileVersion>4.0.0.0</FileVersion>
-    <AssemblyVersion>4.0.0.0</AssemblyVersion>
+    <FileVersion>4.1.0.0</FileVersion>
+    <AssemblyVersion>4.1.0.0</AssemblyVersion>
     <LangVersion>latest</LangVersion>
     <ApplicationIcon>Resources\Img\icon.ico</ApplicationIcon>
     <Authors>Coded by Mahdi Hosseini</Authors>
@@ -26,7 +26,7 @@
     <None Remove="Resources\Img\cloud.png" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="HandyControls" Version="2.4.9" />
+    <PackageReference Include="HandyControls" Version="2.4.9.2" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="Prism.DryIoc" Version="7.2.0.1422" />
   </ItemGroup>
@@ -41,8 +41,5 @@
     <Resource Include="Resources\Img\cloud.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Model\" />
   </ItemGroup>
 </Project>

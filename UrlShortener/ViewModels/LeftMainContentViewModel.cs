@@ -1,7 +1,9 @@
 ﻿using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Regions;
+using System.Linq;
 using System.Windows.Controls;
+using UrlShortener.Views;
 
 namespace UrlShortener.ViewModels
 {
@@ -23,7 +25,24 @@ namespace UrlShortener.ViewModels
 
         private void UrlShortener()
         {
-            _regionManager.RequestNavigate("ContentRegion", "MainShortener");
+            object activeView = _regionManager.Regions["ContentRegion"].ActiveViews.FirstOrDefault();
+            if (activeView != null)
+            {
+                bool IsViewMainShortener = activeView.GetType() == typeof(MainShortener);
+
+                if (IsViewMainShortener)
+                {
+                    _regionManager.Regions["ContentRegion"].RemoveAll();
+                }
+                else
+                {
+                    _regionManager.RequestNavigate("ContentRegion", "MainShortener");
+                }
+            }
+            else
+            {
+                _regionManager.RequestNavigate("ContentRegion", "MainShortener");
+            }
         }
 
         private void Switch(SelectionChangedEventArgs e)

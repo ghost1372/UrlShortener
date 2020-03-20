@@ -16,23 +16,22 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Windows;
 using System.Windows.Controls;
+using UrlShortener.Data;
+using UrlShortener.Model;
 
 namespace UrlShortener.ViewModels
 {
     public class MainShortenerViewModel : BindableBase
     {
-        public class ShorterListModel
-        {
-            public string Link { get; set; }
-            public string ShortLink { get; set; }
-        }
-
         #region Single Url
         #region API
         private const string OpizoApiKey = "3DD3A7CD39B37BC8CBD9EFEEAC0B03DA";
         private const string PlinkApiKey = "Mhl5uGRbVYUm";
         private const string BitlyApiKey = "R_c597e397b606436fa6a9179626da61bb";
         private const string BitlyLoginKey = "o_1i6m8a9v55";
+        private const string CuttlyApiKey = "3f2e3ef2f0597c089cd1af605680c962629c0";
+        private const string RebrandlyApiKey = "b54644c5ea5147ea97a7095e354ca2bc";
+        private const string MakhlasApiKey = "b64cc0ab-f274-486e-ac23-74dd3e10d9d1";
 
         #endregion
 
@@ -42,10 +41,9 @@ namespace UrlShortener.ViewModels
 
         #endregion
 
-
         #region Property
-        private ObservableCollection<string> _DataServer = new ObservableCollection<string>();
-        public ObservableCollection<string> DataServer
+        private ObservableCollection<ComboModel> _DataServer = new ObservableCollection<ComboModel>();
+        public ObservableCollection<ComboModel> DataServer
         {
             get => _DataServer;
             set => SetProperty(ref _DataServer, value);
@@ -69,7 +67,15 @@ namespace UrlShortener.ViewModels
         public int SelectedItemIndex
         {
             get => _SelectedItemIndex;
-            set => SetProperty(ref _SelectedItemIndex, value);
+            set
+            {
+                if (value != _SelectedItemIndex)
+                {
+                    SetProperty(ref _SelectedItemIndex, value);
+                    GlobalData.Config.SelectedIndex = value;
+                    GlobalData.Save();
+                }
+            }
         }
 
         private string _ShortedUrl;
@@ -80,8 +86,6 @@ namespace UrlShortener.ViewModels
         }
 
         #endregion
-
-
 
         #endregion
 
@@ -109,14 +113,20 @@ namespace UrlShortener.ViewModels
         }
         #endregion
         #endregion
+
         public MainShortenerViewModel()
         {
             #region Single Url
             LongUrlChangedCmd = new DelegateCommand<TextChangedEventArgs>(UrlChanged);
             ShortenCmd = new DelegateCommand<string>(Shorten);
 
-            string[] serverList = new string[] { "Opizo", "Bitly", "PLink" };
-            DataServer.AddRange(serverList);
+            DataServer.Add(new ComboModel { Name = "Opizo", IsCustomTextAvailable = false });
+            DataServer.Add(new ComboModel { Name = "Bitly", IsCustomTextAvailable = false });
+            DataServer.Add(new ComboModel { Name = "PLink", IsCustomTextAvailable = true });
+            DataServer.Add(new ComboModel { Name = "Cuttly", IsCustomTextAvailable = true });
+            DataServer.Add(new ComboModel { Name = "Rebrandly", IsCustomTextAvailable = true });
+            DataServer.Add(new ComboModel { Name = "TinyUrl [Need VPN From Iran]", IsCustomTextAvailable = false });
+            DataServer.Add(new ComboModel { Name = "Makhlas", IsCustomTextAvailable = false });
             #endregion
 
             #region Multiple Url
@@ -124,6 +134,8 @@ namespace UrlShortener.ViewModels
             ButtonHelpCmd = new DelegateCommand(Help);
             ButtonStartCmd = new DelegateCommand<IList>(Start);
             #endregion
+
+            SelectedItemIndex = GlobalData.Config.SelectedIndex;
         }
 
         #region Multiple Url
@@ -149,6 +161,18 @@ namespace UrlShortener.ViewModels
 
                         case 2:
                             ShorterList.Add(new ShorterListModel { ShortLink = await PlinkShorten(longLink) });
+                            break;
+                        case 3:
+                            ShorterList.Add(new ShorterListModel { ShortLink = await CuttlyShorten(longLink) });
+                            break;
+                        case 4:
+                            ShorterList.Add(new ShorterListModel { ShortLink = await RebrandlyShorten(longLink) });
+                            break;
+                        case 5:
+                            ShorterList.Add(new ShorterListModel { ShortLink = await TinyUrlShorten(longLink) });
+                            break;
+                        case 6:
+                            ShorterList.Add(new ShorterListModel { ShortLink = await MakhlasShorten(longLink) });
                             break;
                     }
                 }
@@ -206,6 +230,7 @@ namespace UrlShortener.ViewModels
             }
         }
         #endregion
+
         #region Single Url
         private void UrlChanged(TextChangedEventArgs e)
         {
@@ -238,7 +263,22 @@ namespace UrlShortener.ViewModels
 
                 case 2:
                     ShortedUrl = await PlinkShorten(longUrl);
+                    break;
 
+                case 3:
+                    ShortedUrl = await CuttlyShorten(longUrl);
+                    break;
+
+                case 4:
+                    ShortedUrl = await RebrandlyShorten(longUrl);
+                    break;
+
+                case 5:
+                    ShortedUrl = await TinyUrlShorten(longUrl);
+                    break;
+
+                case 6:
+                    ShortedUrl = await MakhlasShorten(longUrl);
                     break;
             }
             IsButtonEnable = true;
@@ -360,6 +400,141 @@ namespace UrlShortener.ViewModels
 
             return "error";
         }
+
+        public async Task<string> CuttlyShorten(string longUrl)
+        {
+
+            try
+            {
+                string url = string.Format("https://cutt.ly/api/api.php?key={0}&short={1}&name={2}", CuttlyApiKey, HttpUtility.UrlEncode(longUrl), SelectedCustomText);
+
+                using (HttpClient client = new HttpClient())
+                using (HttpResponseMessage response = await client.GetAsync(url))
+                using (HttpContent content = response.Content)
+                {
+                    dynamic root = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
+
+                    string statusCode = root.url.status;
+                    if (statusCode.Equals("7"))
+                    {
+                        string link = root.url.shortLink;
+
+                        return link;
+                    }
+                    else
+                    {
+                        string error = root.status;
+                        Growl.Error(error);
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                Growl.Error(ex.Message);
+            }
+
+
+            return "error";
+        }
+
+        public async Task<string> RebrandlyShorten(string longUrl)
+        {
+            try
+            {
+                var data = new { destination = longUrl, slashtag = SelectedCustomText };
+
+                using HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.Add("apikey", RebrandlyApiKey);
+                HttpResponseMessage response = await client.PostAsync("https://api.rebrandly.com/v1/links", data.AsJson());
+                dynamic root = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
+
+                string link = root.shortUrl;
+
+                if (link != null)
+                {
+                    return link;
+                }
+                else
+                {
+                    string error = root.message;
+                    Growl.Error(error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Growl.Error(ex.Message);
+            }
+
+            return "error";
+        }
+
+        public async Task<string> TinyUrlShorten(string longUrl)
+        {
+
+            try
+            {
+                string url = string.Format("https://tinyurl.com/api-create.php?url={0}", HttpUtility.UrlEncode(longUrl));
+
+                using (HttpClient client = new HttpClient())
+                using (HttpResponseMessage response = await client.GetAsync(url))
+                using (HttpContent content = response.Content)
+                {
+                    string root = response.Content.ReadAsStringAsync().Result;
+
+                    if (!root.Contains("Error"))
+                    {
+                        return root;
+                    }
+                    else
+                    {
+                        Growl.Error(root);
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                Growl.Error(ex.Message);
+            }
+
+
+            return "error";
+        }
+
+        public async Task<string> MakhlasShorten(string longUrl)
+        {
+            try
+            {
+                var data = new { long_url = longUrl };
+
+                using HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.Add("authorization", $"Bearer {MakhlasApiKey}");
+
+                HttpResponseMessage response = await client.PostAsync(
+                    $"http://api.makhlas.com/v1/url", data.AsJson());
+                dynamic root = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
+
+                string status = root.success;
+                if (status.ToLower().Contains("true"))
+                {
+                    string link = root.data[0].short_url;
+                    return link;
+                }
+                else
+                {
+                    string error = root.detail;
+                    Growl.Error(error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Growl.Error(ex.Message);
+            }
+
+            return "error";
+        }
+
         #endregion
     }
 }

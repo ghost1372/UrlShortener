@@ -1,5 +1,6 @@
 ﻿using HandyControl.Data;
 using Prism.Ioc;
+using Prism.Regions;
 using System;
 using System.Windows;
 using UrlShortener.Views;
@@ -42,6 +43,7 @@ namespace UrlShortener
             {
                 UpdateSkin(GlobalData.Config.Skin);
             }
+            Container.Resolve<IRegionManager>().RequestNavigate("ContentRegion", "MainShortener");
         }
     }
 }
