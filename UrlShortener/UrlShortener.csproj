@@ -1,20 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWPF>true</UseWPF>
     <AssemblyName>UrlShortener</AssemblyName>
     <RootNamespace>UrlShortener</RootNamespace>
     <Version>1.0.0.0</Version>
     <Configurations>Debug;Release</Configurations>
     <Copyright>Copyright © Mahdi 2018-2020</Copyright>
-    <FileVersion>4.1.0.0</FileVersion>
-    <AssemblyVersion>4.1.0.0</AssemblyVersion>
+    <FileVersion>4.2.0.0</FileVersion>
+    <AssemblyVersion>4.2.0.0</AssemblyVersion>
     <LangVersion>latest</LangVersion>
     <ApplicationIcon>Resources\Img\icon.ico</ApplicationIcon>
     <Authors>Coded by Mahdi Hosseini</Authors>
     <Company>Coded by Mahdi Hosseini</Company>
     <Description>Coded by Mahdi Hosseini</Description>
+    <SatelliteResourceLanguages>en;fa</SatelliteResourceLanguages>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>TRACE;Core</DefineConstants>

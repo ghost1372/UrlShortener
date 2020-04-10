@@ -127,6 +127,9 @@ namespace UrlShortener.ViewModels
             DataServer.Add(new ComboModel { Name = "Rebrandly", IsCustomTextAvailable = true });
             DataServer.Add(new ComboModel { Name = "TinyUrl [Need VPN From Iran]", IsCustomTextAvailable = false });
             DataServer.Add(new ComboModel { Name = "Makhlas", IsCustomTextAvailable = false });
+            DataServer.Add(new ComboModel { Name = "ReLink", IsCustomTextAvailable = false });
+            DataServer.Add(new ComboModel { Name = "Shrturi", IsCustomTextAvailable = false });
+            DataServer.Add(new ComboModel { Name = "Shrtco", IsCustomTextAvailable = false });
             #endregion
 
             #region Multiple Url
@@ -173,6 +176,15 @@ namespace UrlShortener.ViewModels
                             break;
                         case 6:
                             ShorterList.Add(new ShorterListModel { ShortLink = await MakhlasShorten(longLink) });
+                            break;
+                        case 7:
+                            ShorterList.Add(new ShorterListModel { ShortLink = await RelLinkShorten(longLink) });
+                            break;
+                        case 8:
+                            ShorterList.Add(new ShorterListModel { ShortLink = await ShrturiShorten(longLink) });
+                            break;
+                        case 9:
+                            ShorterList.Add(new ShorterListModel { ShortLink = await ShrtcoShorten(longLink) });
                             break;
                     }
                 }
@@ -279,6 +291,15 @@ namespace UrlShortener.ViewModels
 
                 case 6:
                     ShortedUrl = await MakhlasShorten(longUrl);
+                    break;
+                case 7:
+                    ShortedUrl = await RelLinkShorten(longUrl);
+                    break;
+                case 8:
+                    ShortedUrl = await ShrturiShorten(longUrl);
+                    break;
+                case 9:
+                    ShortedUrl = await ShrtcoShorten(longUrl);
                     break;
             }
             IsButtonEnable = true;
@@ -531,6 +552,84 @@ namespace UrlShortener.ViewModels
             {
                 Growl.Error(ex.Message);
             }
+
+            return "error";
+        }
+
+        public async Task<string> RelLinkShorten(string longUrl)
+        {
+            try
+            {
+                var data = new { url = longUrl };
+
+                using HttpClient client = new HttpClient();
+                HttpResponseMessage response = await client.PostAsync("https://rel.ink/api/links/", data.AsJson());
+                dynamic root = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
+
+                string link = root.hashid;
+                if (link != null)
+                {
+                    return $"https://rel.ink/{link}";
+                }
+            }
+            catch (Exception ex)
+            {
+                Growl.Error(ex.Message);
+            }
+
+            return "error";
+        }
+
+        public async Task<string> ShrturiShorten(string longUrl)
+        {
+            try
+            {
+                var data = new { url = longUrl };
+
+                using HttpClient client = new HttpClient();
+                HttpResponseMessage response = await client.PostAsync("https://shrturi.com/api/v1/shorten", data.AsJson());
+                dynamic root = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
+
+                string link = root.result_url;
+                if (link != null)
+                {
+                    return link;
+                }
+            }
+            catch (Exception ex)
+            {
+                Growl.Error(ex.Message);
+            }
+
+            return "error";
+        }
+
+        public async Task<string> ShrtcoShorten(string longUrl)
+        {
+
+            try
+            {
+                string url = string.Format("https://api.shrtco.de/v2/shorten?url={0}", HttpUtility.UrlEncode(longUrl));
+
+                using (HttpClient client = new HttpClient())
+                using (HttpResponseMessage response = await client.GetAsync(url))
+                using (HttpContent content = response.Content)
+                {
+                    string root = response.Content.ReadAsStringAsync().Result;
+                    dynamic parse = JsonConvert.DeserializeObject<dynamic>(root);
+                    string status = parse.ok;
+                    if (!status.Contains("true"))
+                    {
+                        string link = parse.result.full_short_link;
+                        return link;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Growl.Error(ex.Message);
+            }
+
 
             return "error";
         }
